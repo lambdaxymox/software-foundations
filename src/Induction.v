@@ -187,18 +187,22 @@ Qed.
     induction hypothesis about [n - 2]. The following lemma gives an
     alternative characterization of [evenb (S n)] that works better
     with induction: *)
-
 Theorem evenb_S : forall n : nat, evenb (S n) = negb (evenb n).
 Proof.
-  intros n.
+  intros n. induction n as [| n' IHn'].
+  - simpl. reflexivity. 
+  - rewrite -> IHn'. simpl. rewrite -> negb_involutive. reflexivity.
 Qed.
 (** [] *)
 
 (** **** Exercise: 1 starM (destruct_induction)  *)
 (** Briefly explain the difference between the tactics [destruct]
     and [induction].
-
-(* FILL IN HERE *)
+*)
+(** 
+  The [destruct] tactic and the [induction] tactic both expand the structure
+  of an inductive or enumerated type. The difference is that the [induction]
+  tactic provides an inductive hypothesis, whereas [destruct] does not.
 *)
 (** [] *)
 
@@ -223,7 +227,8 @@ Proof.
   intros n m.
   assert (H: 0 + n = n). { reflexivity. }
   rewrite -> H.
-  reflexivity.  Qed.
+  reflexivity.  
+Qed.
 
 (** The [assert] tactic introduces two sub-goals.  The first is
     the assertion itself; by prefixing it with [H:] we name the
@@ -273,7 +278,8 @@ Proof.
   intros n m p q.
   assert (H: n + m = m + n).
   { rewrite -> plus_comm. reflexivity. }
-  rewrite -> H. reflexivity.  Qed.
+  rewrite -> H. reflexivity.
+Qed.
 
 (* ################################################################# *)
 (** * Formal vs. Informal Proof *)
@@ -344,7 +350,8 @@ Proof.
   - (* n = 0 *)
     reflexivity.
   - (* n = S n' *)
-    simpl. rewrite -> IHn'. reflexivity.   Qed.
+    simpl. rewrite -> IHn'. reflexivity.
+Qed.
 
 (** ... and if you're used to Coq you may be able to step
     through the tactics one after the other in your mind and imagine
@@ -397,7 +404,7 @@ Proof.
 
     Theorem: Addition is commutative.
 
-    Proof: (* FILL IN HERE *)
+    Proof: By induction on m and n.
 *)
 (** [] *)
 
@@ -418,20 +425,76 @@ Proof.
 (** Use [assert] to help prove this theorem.  You shouldn't need to
     use induction on [plus_swap]. *)
 
-Theorem plus_swap : forall n m p : nat,
-  n + (m + p) = m + (n + p).
+Theorem plus_swap : forall n m p : nat, n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p.
+  assert (H1 : n + m = m + n).
+    { rewrite -> plus_comm. reflexivity. }
+  assert (H2 : (n + m) + p = (m + n) + p). 
+    { rewrite -> H1. reflexivity. }
+  rewrite -> plus_assoc. 
+  rewrite -> H2. 
+  rewrite <- plus_assoc.
+  reflexivity.
+Qed.
 
 (** Now prove commutativity of multiplication.  (You will probably
     need to define and prove a separate subsidiary theorem to be used
     in the proof of this one.  You may find that [plus_swap] comes in
     handy.) *)
-
-Theorem mult_comm : forall m n : nat,
-  m * n = n * m.
+Theorem mult_dist1 : forall m n p : nat, m * (n + p) = m * n + m * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros m n p. induction m as [| m' IHm']. 
+  - simpl. reflexivity.
+  - assert (H1 : m' * n + m' * p = m' * p + m' * n). 
+    { rewrite -> plus_comm. reflexivity. }
+    assert (H2 : m' * n + (p + m' * p) = p + (m' * n + m' * p)).
+    { rewrite -> plus_comm. 
+      rewrite <- plus_assoc. 
+      rewrite <- H1. 
+      rewrite -> plus_comm.
+      reflexivity.
+    }
+    assert(H3: n + m' * n + (p + m' * p) = n + p + (m' * n + m' * p)).
+    { rewrite <- plus_assoc. 
+      rewrite -> H2. 
+      rewrite -> plus_assoc. 
+      reflexivity. 
+    }
+    simpl. 
+    rewrite -> IHm'. 
+    rewrite -> H3. 
+    rewrite -> plus_comm.
+    reflexivity.
+Qed.
+
+Theorem mult_dist2 : forall m n p : nat, (m + n) * p = m * p + n * p.
+Proof. (* This proof is similar to mult_dist1. *)
+Admitted.
+
+Theorem mult_comm : forall m n : nat, m * n = n * m.
+Proof.
+  assert (H1 : forall p : nat, S p = p + 1).
+  { intros p. rewrite <- plus_comm. rewrite <- plus_1_l. reflexivity. }  
+  assert (H2 : forall p : nat, p * 1 = 1 * p).
+  { intros p. induction p as [| p' IHp'].
+    - reflexivity.
+    - rewrite -> H1. 
+      rewrite -> mult_dist2. 
+      rewrite -> mult_dist1.
+      rewrite -> IHp'.
+      reflexivity. 
+  }  
+  intros m n.
+  induction m as [| m' IHm'].
+  - simpl. rewrite -> mult_0_r. reflexivity.
+  - rewrite -> H1. 
+    rewrite -> mult_dist1. 
+    rewrite -> mult_dist2.
+    rewrite -> H2.
+    rewrite -> IHm'.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (more_exercises)  *)
