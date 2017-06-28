@@ -1249,8 +1249,9 @@ Proof.
     + rewrite -> H. reflexivity.
   - rewrite -> orb_false_eq_b.
     destruct c.
-    +  intros H. rewrite <- H. simpl. reflexivity.
+    + intros H. rewrite <- H. simpl. reflexivity.
     + reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 starsM (binary)  *)

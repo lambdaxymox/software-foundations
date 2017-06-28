@@ -1,0 +1,95 @@
+DIGEST 180d3a9f5e29120784750b2df8c2e5b7
+FInduction
+R159:164 Coq.Program.Basics <> <> lib
+prf 1166:1182 <> plus_n_O_firsttry
+R1195:1197 Coq.Init.Datatypes <> nat ind
+R1203:1205 Coq.Init.Logic <> :type_scope:x_'='_x not
+R1202:1202 Induction <> n var
+R1207:1209 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R1206:1206 Induction <> n var
+prf 1749:1766 <> plus_n_O_secondtry
+R1779:1781 Coq.Init.Datatypes <> nat ind
+R1787:1789 Coq.Init.Logic <> :type_scope:x_'='_x not
+R1786:1786 Induction <> n var
+R1791:1793 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R1790:1790 Induction <> n var
+prf 3066:3073 <> plus_n_O
+R3086:3088 Coq.Init.Datatypes <> nat ind
+R3092:3094 Coq.Init.Logic <> :type_scope:x_'='_x not
+R3091:3091 Induction <> n var
+R3096:3098 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R3095:3095 Induction <> n var
+prf 4279:4288 <> minus_diag
+R4313:4315 Coq.Init.Logic <> :type_scope:x_'='_x not
+R4304:4308 Coq.Init.Peano <> minus syndef
+R4312:4312 Induction <> n var
+R4310:4310 Induction <> n var
+prf 4890:4897 <> mult_0_r
+R4910:4912 Coq.Init.Datatypes <> nat ind
+R4922:4924 Coq.Init.Logic <> :type_scope:x_'='_x not
+R4918:4920 Coq.Init.Peano <> :nat_scope:x_'*'_x not
+R4917:4917 Induction <> n var
+prf 5047:5055 <> plus_n_Sm
+R5072:5074 Coq.Init.Datatypes <> nat ind
+R5088:5090 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5079:5079 Coq.Init.Datatypes <> S constr
+R5083:5085 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5082:5082 Induction <> n var
+R5086:5086 Induction <> m var
+R5092:5095 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5099:5099 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5091:5091 Induction <> n var
+R5096:5096 Coq.Init.Datatypes <> S constr
+R5098:5098 Induction <> m var
+prf 5230:5238 <> plus_comm
+R5255:5257 Coq.Init.Datatypes <> nat ind
+R5267:5269 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5263:5265 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5262:5262 Induction <> n var
+R5266:5266 Induction <> m var
+R5271:5273 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5270:5270 Induction <> m var
+R5274:5274 Induction <> n var
+R5348:5355 Induction <> plus_n_O thm
+R5348:5355 Induction <> plus_n_O thm
+R5348:5355 Induction <> plus_n_O thm
+R5410:5418 Induction <> plus_n_Sm thm
+R5410:5418 Induction <> plus_n_Sm thm
+R5410:5418 Induction <> plus_n_Sm thm
+prf 5448:5457 <> plus_assoc
+R5476:5478 Coq.Init.Datatypes <> nat ind
+R5494:5496 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5484:5487 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5493:5493 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5483:5483 Induction <> n var
+R5489:5491 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5488:5488 Induction <> m var
+R5492:5492 Induction <> p var
+R5497:5497 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5503:5506 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5499:5501 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5498:5498 Induction <> n var
+R5502:5502 Induction <> m var
+R5507:5507 Induction <> p var
+def 5765:5770 <> double
+R5775:5777 Coq.Init.Datatypes <> nat ind
+R5791:5791 Induction <> n var
+R5802:5802 Coq.Init.Datatypes <> O constr
+R5807:5807 Coq.Init.Datatypes <> O constr
+R5813:5813 Coq.Init.Datatypes <> S constr
+R5821:5821 Coq.Init.Datatypes <> S constr
+R5824:5824 Coq.Init.Datatypes <> S constr
+R5827:5832 Induction <> double def
+prf 5917:5927 <> double_plus
+R5949:5951 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5941:5946 Induction <> double def
+R5948:5948 Induction <> n var
+R5953:5955 Coq.Init.Peano <> :nat_scope:x_'+'_x not
+R5952:5952 Induction <> n var
+R5956:5956 Induction <> n var
+R6063:6071 Induction <> plus_n_Sm thm
+R6063:6071 Induction <> plus_n_Sm thm
+R6063:6071 Induction <> plus_n_Sm thm
+prf 6518:6524 <> evenb_S
+R6539:6541 Coq.Init.Datatypes <> nat ind
+R6555:6557 Coq.Init.Logic <> :type_scope:x_'='_x not
