@@ -409,36 +409,43 @@ Proof. reflexivity. Qed.
 (** When remove_one is applied to a bag without the number to remove,
    it should return the same bag unchanged. *)
 
-Fixpoint remove_one (v:nat) (s:bag) : bag
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint remove_one (v:nat) (s:bag) : bag :=
+  match s with
+  | nil          => nil
+  | head :: tail => 
+      match (beq_nat head v) with
+      | true  => tail
+      | false => head :: remove_one v tail
+      end
+  end.
 
 Example test_remove_one1:
   count 5 (remove_one 5 [2;1;5;4;1]) = 0.
-  (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_remove_one2:
   count 5 (remove_one 5 [2;1;4;1]) = 0.
-  (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_remove_one3:
   count 4 (remove_one 5 [2;1;4;5;1;4]) = 2.
-  (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_remove_one4:
   count 5 (remove_one 5 [2;1;5;4;5;1;4]) = 1.
-  (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Fixpoint remove_all (v:nat) (s:bag) : bag
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 Example test_remove_all1:  count 5 (remove_all 5 [2;1;5;4;1]) = 0.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_remove_all2:  count 5 (remove_all 5 [2;1;4;1]) = 0.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_remove_all3:  count 4 (remove_all 5 [2;1;4;5;1;4]) = 2.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_remove_all4:  count 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Fixpoint subset (s1:bag) (s2:bag) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -900,15 +907,15 @@ Admitted.
     lists of numbers for equality.  Prove that [beq_natlist l l]
     yields [true] for every list [l]. *)
 
-Fixpoint beq_natlist (l1 l2 : natlist) : bool
-  match l1 l2 with
+Fixpoint beq_natlist (l1 l2 : natlist) : bool :=
+  match l1, l2 with
   | nil, nil  => true
   | head1 :: tail1, head2 :: tail2 =>
       match (beq_nat head1 head2) with
       | true  => beq_natlist tail1 tail2
       | false => false
       end
-  | _,_       => false
+  | _, _      => false
   end.
 
 Example test_beq_natlist1 :
@@ -926,7 +933,15 @@ Proof. reflexivity. Qed.
 Theorem beq_natlist_refl : forall l:natlist,
   true = beq_natlist l l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  assert (H : forall (v : nat), beq_nat v v = true). 
+    { intros v. induction v as [| v' IHv'].
+      - reflexivity.
+      - simpl. rewrite -> IHv'. reflexivity. 
+    }
+  intros l. induction l as [| head tail Ihl].
+  - simpl. reflexivity.
+  - simpl. rewrite <- Ihl. rewrite -> H. reflexivity.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -939,7 +954,8 @@ Proof.
 Theorem count_member_nonzero : forall (s : bag),
   leb 1 (count 1 (1 :: s)) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros s. simpl. reflexivity.
+Qed.
 
 (** The following lemma about [leb] might help you in the next proof. *)
 
@@ -950,12 +966,18 @@ Proof.
   - (* 0 *)
     simpl.  reflexivity.
   - (* S n' *)
-    simpl.  rewrite IHn'.  reflexivity.  Qed.
+    simpl.  rewrite IHn'.  reflexivity.
+Qed.
 
 Theorem remove_decreases_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  assert (H : remove_one 0 [] = []).
+  {  }
+  intros s. induction s as [| head tail IHs].
+  - reflexivity.
+  -
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, optionalM (bag_count_sum)  *)
