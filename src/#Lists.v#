@@ -900,15 +900,15 @@ Admitted.
     lists of numbers for equality.  Prove that [beq_natlist l l]
     yields [true] for every list [l]. *)
 
-Fixpoint beq_natlist (l1 l2 : natlist) : bool
-  match l1 l2 with
+Fixpoint beq_natlist (l1 l2 : natlist) : bool :=
+  match l1, l2 with
   | nil, nil  => true
   | head1 :: tail1, head2 :: tail2 =>
       match (beq_nat head1 head2) with
       | true  => beq_natlist tail1 tail2
       | false => false
       end
-  | _,_       => false
+  | _, _      => false
   end.
 
 Example test_beq_natlist1 :
@@ -926,7 +926,15 @@ Proof. reflexivity. Qed.
 Theorem beq_natlist_refl : forall l:natlist,
   true = beq_natlist l l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  assert (H : forall (v : nat), beq_nat v v = true). 
+    { intros v. induction v as [| v' IHv'].
+      - reflexivity.
+      - simpl. rewrite -> IHv'. reflexivity. 
+    }
+  intros l. induction l as [| head tail Ihl].
+  - simpl. reflexivity.
+  - simpl. rewrite <- Ihl. rewrite -> H. reflexivity.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
