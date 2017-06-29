@@ -609,7 +609,35 @@ Proof.
     definitions to make the property easier to prove, feel free to
     do so! *)
 
-(* FILL IN HERE *)
+(* Redefinition of bin_to_nat *)
+Fixpoint bin_to_nat (n : bin) : nat :=
+  match n with
+  | BZ      => O
+  | Twice n => 2 * (bin_to_nat n)
+  | More  n => 2 * (bin_to_nat n) + 1
+  end.
+
+Theorem binary_commute : 
+  forall (b : bin), bin_to_nat (inc b) = S (bin_to_nat b).
+Proof.
+  assert (H1 : forall (n : bin), bin_to_nat n + 0 = bin_to_nat n).
+  { intros n. rewrite -> plus_n_O. reflexivity. }
+  assert (H2 : forall (n : bin), 
+    bin_to_nat n + bin_to_nat n + 0 = bin_to_nat n + bin_to_nat n).
+  { intros n. rewrite <- plus_assoc. rewrite -> H1. reflexivity. }
+  assert (H3 : forall (n : bin), 
+    S (bin_to_nat n + bin_to_nat n + 1) = S (bin_to_nat n) + S (bin_to_nat n)).
+  { intros n. simpl. 
+    rewrite <- plus_assoc. rewrite <- plus_n_Sm. rewrite -> H1.
+    reflexivity.
+  }
+  intros b. induction b as [b' | b' | b' IHb'].
+  - reflexivity.
+  - simpl. rewrite -> H1. rewrite <- plus_n_Sm. rewrite -> H2. reflexivity.
+  - simpl. 
+    rewrite -> H1. rewrite -> H1. rewrite -> H3.  
+    rewrite -> IHb'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, advancedM (binary_inverse)  *)
@@ -639,6 +667,68 @@ Proof.
     here. *)
 
 (* FILL IN HERE *)
+(* Part (a). *)
+Fixpoint nat_to_bin (n : nat) : bin :=
+  match n with
+  | O    => BZ
+  | S n' => inc (nat_to_bin n')
+  end.
+
+Theorem nat_to_bin_commute_bin_to_nat: 
+  forall (n : nat), bin_to_nat (nat_to_bin n) = n.
+Proof.
+  intros n. induction n as [|n' IHn'].
+  - (* n = 0 *)
+    reflexivity.
+  - (* n = S n' *)
+    simpl. rewrite -> binary_commute. rewrite -> IHn'. reflexivity.
+Qed.
+
+(* Part (b). 
+   There are multiple binary representations of the same natural number.
+*)
+Example  mult_rep_0 : BZ = Twice (Twice BZ).
+Proof. Admitted.
+
+(* Part (c). *)
+Fixpoint normalize (b : bin) : bin :=
+  match b with
+  | BZ       => BZ
+  | Twice b' => 
+      match (normalize b') with
+      | BZ   => BZ
+      | b'' => Twice b''
+      end
+  | More b' => More (normalize b')
+  end.
+
+Theorem More_nat_to_bin_commute : forall (n : nat),
+  More (nat_to_bin n) = nat_to_bin (n + n + 1).
+Proof.
+  intros n. induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl.
+    assert (H0 : S n' = n' + 1).
+    { rewrite <- plus_n_Sm. rewrite <- plus_n_O. reflexivity. }
+    assert (H1 : n' + S n' + 1 = S (n' + n' + 1)).
+    { rewrite -> plus_n_Sm. rewrite <- plus_assoc. 
+      rewrite -> H0. 
+      rewrite <- plus_assoc. simpl. rewrite -> plus_assoc. 
+      reflexivity.
+    }
+    assert (H2 : n' + n' + 1 = S (n' + n')).
+    { rewrite -> plus_comm. reflexivity. }
+    rewrite -> H1. simpl. 
+    rewrite <- IHn'. simpl. 
+    reflexivity.
+Qed.
+
+Theorem bin_to_nat_nat_to_bin_normalized_commute :
+  forall (b : bin), nat_to_bin (bin_to_nat b) = normalize b.
+Proof.
+  intros b. induction b as [|b' IHb' |b'].
+Abort.
+
 (** [] *)
 
 (** $Date: 2016-10-07 14:01:19 -0400 (Fri, 07 Oct 2016) $ *)
