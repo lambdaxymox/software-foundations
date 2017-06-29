@@ -801,21 +801,79 @@ Proof.
 
 (** **** Exercise: 3 starsM (list_exercises)  *)
 (** More practice with lists: *)
+Lemma app_nil : forall (l : natlist),
+  l ++ [] = l.
+Proof.
+  intros l. induction l as [|head tail IHl].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHl. reflexivity.
+Qed.
+
+Lemma cons_nil_r : forall (a : nat) (l : natlist),
+  (a :: l) ++ [] = a :: (l ++ []).
+Proof.
+  intros a l. rewrite -> app_nil. rewrite -> app_nil. reflexivity.
+Qed.
 
 Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l. induction l as [| l' IHl'].
+  - simpl. reflexivity.
+  - rewrite -> cons_nil_r. rewrite -> app_nil. reflexivity.
+Qed.
+
+Theorem list_cons_r : forall (a : nat) (l1 l2 : natlist),
+  l1 ++ (a :: l2) =  l1 ++ [a] ++ l2.
+Proof.
+  intros a l1 l2. simpl. reflexivity.
+Qed.
+
+Theorem cons_list_r : forall (a : nat) (l1 l2 : natlist),
+  (a :: l1) ++ l2 = a :: (l1 ++ l2).
+Proof.
+  intros a l1 l2. simpl. reflexivity.
+Qed.
+
+Theorem rev_head_tail : forall (head : nat) (tail : natlist),
+  rev (head :: tail) = rev (tail) ++ [head].
+Proof.
+  intros head tail. simpl. reflexivity.
+Qed.
+
+Theorem concat_assoc : forall (l1 l2 l3 : natlist),
+  (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Proof.
+  intros l1 l2 l3. induction l1 as [| head tail IHl'].
+  - rewrite -> nil_app. rewrite -> nil_app. reflexivity.
+  - rewrite -> cons_list_r. rewrite -> cons_list_r. rewrite -> cons_list_r.
+    rewrite -> IHl'. 
+    reflexivity.
+Qed.
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l1 l2. induction l1 as [| head tail IHl].
+  - simpl. rewrite -> app_nil. reflexivity.
+  - rewrite -> cons_list_r. 
+    rewrite -> rev_head_tail. rewrite -> rev_head_tail.
+    rewrite -> IHl.
+    rewrite -> concat_assoc.
+    reflexivity.
+Qed.
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  assert (H0 : forall (a : nat), rev [a] = [a]).
+  { intros a. simpl. reflexivity. }
+  intros l. induction l as [| head tail IHl].
+  - simpl. reflexivity.
+  - rewrite -> rev_head_tail. rewrite -> rev_app_distr.
+    rewrite -> IHl.
+    simpl. reflexivity.
+Qed.
 
 (** There is a short solution to the next one.  If you find yourself
     getting tangled up, step back and try to look for a simpler
@@ -824,14 +882,17 @@ Proof.
 Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l1 l2 l3 l4. 
+  rewrite -> app_assoc. rewrite -> app_assoc. 
+  reflexivity.
+Qed.
 
 (** An exercise about your implementation of [nonzeros]: *)
 
 Lemma nonzeros_app : forall l1 l2 : natlist,
   nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
 Proof.
-  (* FILL IN HERE *) Admitted.
+Admitted.
 (** [] *)
 
 (** **** Exercise: 2 stars (beq_natlist)  *)
@@ -844,15 +905,15 @@ Fixpoint beq_natlist (l1 l2 : natlist) : bool
 
 Example test_beq_natlist1 :
   (beq_natlist nil nil = true).
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_beq_natlist2 :
   beq_natlist [1;2;3] [1;2;3] = true.
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_beq_natlist3 :
   beq_natlist [1;2;3] [1;2;4] = false.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Theorem beq_natlist_refl : forall l:natlist,
   true = beq_natlist l l.
