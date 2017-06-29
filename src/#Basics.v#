@@ -1333,6 +1333,9 @@ Fixpoint bin_to_nat (n : bin) : nat :=
   | Twice n => 2 * (bin_to_nat n)
   | More  n => 2 * (bin_to_nat n) + 1
   end.
+
+Example test_bin_to_nat : bin_to_nat (inc (inc (inc (inc (inc BZ))))) = 5.
+Proof. reflexivity. Qed.
 (** [] *)
 
 (** $Date: 2016-11-22 16:39:52 -0500 (Tue, 22 Nov 2016) $ *)
