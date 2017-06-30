@@ -76,7 +76,8 @@ Theorem silly_ex :
      evenb 3 = true ->
      oddb 4 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n P. apply P.
+Qed.
 (** [] *)
 
 (** To use the [apply] tactic, the (conclusion of the) fact
@@ -98,7 +99,8 @@ Proof.
   symmetry.
   simpl. (* (This [simpl] is optional, since [apply] will perform
             simplification first, if needed.) *)
-  apply H.  Qed.
+  apply H.  
+Qed.
 
 (** **** Exercise: 3 stars (apply_exercise1)  *)
 (** (_Hint_: You can use [apply] with previously defined lemmas, not
@@ -109,7 +111,8 @@ Theorem rev_exercise1 : forall (l l' : list nat),
      l = rev l' ->
      l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l l'. intros P. rewrite -> P. symmetry. 
+  apply rev_involutive.  Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, optionalM (apply_rewrite)  *)
@@ -177,7 +180,11 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p eq1 eq2.
+  apply trans_eq with (minustwo o). 
+  - rewrite <- eq1. apply eq2. 
+  - reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -246,7 +253,8 @@ Theorem inversion_ex2 : forall (n m : nat),
   [n] = [m] ->
   n = m.
 Proof.
-  intros n m H. inversion H as [Hnm]. reflexivity.  Qed.
+  intros n m H. inversion H as [Hnm]. reflexivity.
+Qed.
 
 (** **** Exercise: 1 star (inversion_ex3)  *)
 Example inversion_ex3 : forall (X : Type) (x y z : X) (l j : list X),
@@ -254,7 +262,10 @@ Example inversion_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   y :: l = x :: j ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X. intros x y z l j. intros H0 H1. 
+  inversion H0. inversion H1. 
+  symmetry. apply H2.
+Qed.
 (** [] *)
 
 (** When used on a hypothesis involving an equality between
@@ -318,7 +329,9 @@ Example inversion_ex6 : forall (X : Type)
   y :: l = z :: j ->
   x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X. intros x y z l j. intros contra.
+  inversion contra.
+Qed.
 (** [] *)
 
 (** To summarize this discussion, suppose [H] is a hypothesis in the
@@ -409,7 +422,19 @@ Theorem plus_n_n_injective : forall n m,
      n = m.
 Proof.
   intros n. induction n as [| n'].
-    (* FILL IN HERE *) Admitted.
+  - intros m H. simpl in H. induction m.
+    + reflexivity.
+    + rewrite <- plus_n_Sm in H.
+      rewrite <- plus_comm in H.
+      rewrite <- plus_n_Sm in H.
+      inversion H.
+  - intros m H. simpl in H. induction m.
+    + simpl in H. rewrite <- plus_n_Sm in H. inversion H.
+    + simpl in H. 
+      rewrite <- plus_n_Sm in H. rewrite <- plus_n_Sm in H.
+      inversion H. apply IHn' in H1. rewrite H1. 
+      reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -552,7 +577,8 @@ Proof.
     performed automatically by the [apply] in the next step), then
     [IHn'] gives us exactly what we need to finish the proof. *)
 
-      apply IHn'. inversion eq. reflexivity. Qed.
+      apply IHn'. inversion eq. reflexivity. 
+Qed.
 
 (** What you should take away from all this is that we need to be
     careful about using induction to try to prove something too
@@ -565,7 +591,14 @@ Proof.
 Theorem beq_nat_true : forall n m,
     beq_nat n m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n as [| n'].
+  - intros m. destruct m as [| m'].
+    + simpl. intros P. reflexivity.
+    + simpl. intros P. inversion P.
+  - intros m. destruct m as [|m'].
+    + simpl. intros P. inversion P.
+    + simpl. intros P. apply f_equal. apply IHn'. apply P. 
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advancedM (beq_nat_true_informal)  *)
@@ -629,7 +662,8 @@ Proof.
   - (* m = S m' *) intros n eq. destruct n as [| n'].
     + (* n = O *) inversion eq.
     + (* n = S n' *) apply f_equal.
-      apply IHm'. inversion eq. reflexivity. Qed.
+      apply IHm'. inversion eq. reflexivity. 
+Qed.
 
 (** Let's look at an informal proof of this theorem.  Note that
     the proposition we prove by induction leaves [n] quantified,
@@ -922,7 +956,8 @@ Proof.
         + (* e5 = true *)
           apply beq_nat_true in Heqe5.
           rewrite -> Heqe5. reflexivity.
-        + (* e5 = false *) inversion eq.  Qed.
+        + (* e5 = false *) inversion eq.  
+Qed.
 
 (** **** Exercise: 2 stars (destruct_eqn_practice)  *)
 Theorem bool_fn_applied_thrice :
