@@ -714,7 +714,7 @@ Theorem beq_id_true : forall x y,
 Proof.
   intros [m] [n]. simpl. intros H.
   assert (H' : m = n). { apply beq_nat_true. apply H. }
-  rewrite H'. reflexivity.
+  rewrite -> H'. reflexivity.
 Qed.
 
 (** **** Exercise: 3 stars, recommended (gen_dep_practice)  *)
@@ -724,7 +724,15 @@ Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      nth_error l n = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X l. generalize dependent l. generalize dependent n.
+  induction n.
+  - destruct l.
+    + intros H. simpl. reflexivity.
+    +  simpl. intros H. inversion H.
+  - destruct l.
+    + simpl. intros H. reflexivity.
+    + simpl. intros H. apply IHn. inversion H. reflexivity.
+Qed.
 (** [] *)
 
 
