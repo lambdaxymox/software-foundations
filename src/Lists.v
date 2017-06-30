@@ -454,8 +454,13 @@ Proof. reflexivity. Qed.
 Example test_remove_all4:  count 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
 Proof. reflexivity. Qed.
 
-Fixpoint subset (s1:bag) (s2:bag) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint subset (s1:bag) (s2:bag) : bool :=
+  match s1 with
+  | nil     => true
+  | v :: t1 => 
+      if (member v s2) then subset t1 (remove_one v s2)
+      else false
+  end.
 
 Example test_subset1:              subset [1;2] [2;1;4;1] = true.
 Proof. reflexivity. Qed.
@@ -1227,9 +1232,12 @@ Definition beq_id (x1 x2 : id) :=
   end.
 
 (** **** Exercise: 1 star (beq_id_refl)  *)
-Theorem beq_id_refl : forall x, true = beq_id x x.
+Theorem beq_id_refl : forall x : id, true = beq_id x x.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros x. destruct x. simpl. 
+  rewrite <- beq_nat_refl. 
+  reflexivity.
+Qed.
 (** [] *)
 
 (** Now we define the type of partial maps: *)
@@ -1276,7 +1284,8 @@ Theorem update_eq :
   forall (d : partial_map) (x : id) (v: nat),
     find x (update d x v) = Some v.
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros d x v. simpl. rewrite <- beq_id_refl. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star (update_neq)  *)
@@ -1284,7 +1293,8 @@ Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
     beq_id x y = false -> find x (update d y o) = find x d.
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros d x y o. intros P. simpl. rewrite -> P. reflexivity.
+Qed.
 (** [] *)
 End PartialMap.
 
