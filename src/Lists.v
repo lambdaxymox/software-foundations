@@ -979,30 +979,19 @@ Proof.
     simpl.  rewrite IHn'.  reflexivity.
 Qed.
 
-Lemma count_remove_one_single_element :
-  forall (v : nat) (head : nat), count v (remove_one v [head]) = 0.
+Lemma S_function1 : forall m n : nat, m = n -> S m = S n.
 Proof.
-  intros v head. simpl. destruct (beq_nat head v).
-  - simpl. reflexivity.
-  - simpl. 
-Abort.
+  intros m n. intros p. rewrite -> p. reflexivity.
+Qed.
 
-Lemma count_remove_one :
-  forall (v : nat) (head : nat) (tail : natlist),
-  count v (remove_one v (head :: tail)) = 
-    count v (remove_one v [head]) + count v (remove_one v tail).
+Lemma S_injective : forall m n : nat, S m = S n -> m = n.
 Proof.
-Admitted.
+  intros m n P. inversion P. reflexivity.
+Qed.
 
 Lemma count_v_empty : 
   forall (v : nat), count v [ ] = 0.
 Proof. simpl. reflexivity. Qed.
-
-Lemma count_remove_one' :
-  forall (v : nat) (head : nat) (tail : natlist),
-  count v (remove_one v (head :: tail)) = count v (remove_one v tail).
-Proof.
-Admitted.
 
 Fixpoint head_to_list (l: natlist) : natlist :=
   match l with
@@ -1064,11 +1053,13 @@ Qed.
 Theorem remove_decreases_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
-  intros s. induction s as [| head tail IHs].
+  intros s. induction s as [| v s' IHs].
   - reflexivity. 
-  - rewrite -> count_remove_one. rewrite -> count_remove_one_single_element.
-    rewrite -> plus_comm. rewrite <- plus_n_O. rewrite <- head_list.
-    rewrite -> count_sum.
+  - destruct v as [|v']. 
+    + (* v = 0 *)
+      simpl. rewrite -> ble_n_Sn. reflexivity.
+    + (* v = S n *)
+      simpl. rewrite -> IHs.  reflexivity.
 Qed.
 (** [] *)
 
