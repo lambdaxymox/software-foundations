@@ -458,9 +458,9 @@ Fixpoint subset (s1:bag) (s2:bag) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 Example test_subset1:              subset [1;2] [2;1;4;1] = true.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, recommendedM (bag_theorem)  *)
@@ -877,11 +877,14 @@ Proof.
     reflexivity.
 Qed.
 
+Theorem rev_idem : forall (a : nat), rev [a] = [a].
+Proof.
+  intros a. simpl. reflexivity.
+Qed.
+
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
-  assert (H0 : forall (a : nat), rev [a] = [a]).
-  { intros a. simpl. reflexivity. }
   intros l. induction l as [| head tail IHl].
   - simpl. reflexivity.
   - rewrite -> rev_head_tail. rewrite -> rev_app_distr.
@@ -976,14 +979,96 @@ Proof.
     simpl.  rewrite IHn'.  reflexivity.
 Qed.
 
+Lemma count_remove_one_single_element :
+  forall (v : nat) (head : nat), count v (remove_one v [head]) = 0.
+Proof.
+  intros v head. simpl. destruct (beq_nat head v).
+  - simpl. reflexivity.
+  - simpl. 
+Abort.
+
+Lemma count_remove_one :
+  forall (v : nat) (head : nat) (tail : natlist),
+  count v (remove_one v (head :: tail)) = 
+    count v (remove_one v [head]) + count v (remove_one v tail).
+Proof.
+Admitted.
+
+Lemma count_v_empty : 
+  forall (v : nat), count v [ ] = 0.
+Proof. simpl. reflexivity. Qed.
+
+Lemma count_remove_one' :
+  forall (v : nat) (head : nat) (tail : natlist),
+  count v (remove_one v (head :: tail)) = count v (remove_one v tail).
+Proof.
+Admitted.
+
+Fixpoint head_to_list (l: natlist) : natlist :=
+  match l with
+  | nil => []
+  | head :: tail => [head]
+  end.
+
+Lemma head_to_list_to_hd :
+  forall (l : natlist), l = head_to_list l ++ tl l.
+Proof.
+  intros l. induction l as [| head tail IHl].
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
+
+Lemma head_tail_split1 : 
+  forall (head : nat) (tail : natlist),
+  [head] ++ tail = head_to_list ([head] ++ tail) ++ tl ([head] ++ tail).
+Proof.
+  intros head tail. simpl. reflexivity.
+Qed.
+
+Lemma head_tail_split2 :
+  forall (head : nat) (tail : natlist),
+  head :: tail = head_to_list (head :: tail) ++ tl (head :: tail).
+Proof.
+  intros head tail. simpl. reflexivity.
+Qed.
+
+Lemma head_tail_sum :
+  forall (v : nat) (head : nat) (tail : natlist),
+  count v (head :: tail) = count v [head] + count v tail.
+Proof.
+  intros v head tail. simpl. destruct (beq_nat head v).
+  - simpl. reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma count_sum :
+  forall (v : nat) (l1 l2 : natlist),
+  count v (l1 ++ l2) = count v l1 + count v l2.
+Proof.
+  intros v l1 l2. simpl. induction l1 as [| head1 tail1 IHl1].
+  - simpl. reflexivity.
+  - assert (H0 : count v (head1 :: tail1) = count v [head1] + count v tail1).
+    { rewrite -> head_tail_sum. reflexivity. }
+    rewrite -> cons_list_r. rewrite -> head_tail_sum. rewrite -> H0. 
+    rewrite -> IHl1. rewrite -> plus_assoc.
+    reflexivity. 
+Qed.
+
+Lemma head_list :
+  forall (head : nat) (tail : natlist),
+  [head] ++ tail = head :: tail.
+Proof.
+  intros head tail. simpl. reflexivity.
+Qed.
+
 Theorem remove_decreases_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
-  assert (H : remove_one 0 [] = []).
-  {  }
   intros s. induction s as [| head tail IHs].
-  - reflexivity.
-  -
+  - reflexivity. 
+  - rewrite -> count_remove_one. rewrite -> count_remove_one_single_element.
+    rewrite -> plus_comm. rewrite <- plus_n_O. rewrite <- head_list.
+    rewrite -> count_sum.
 Qed.
 (** [] *)
 
@@ -1003,6 +1088,12 @@ Qed.
 (There is a hard way and an easy way to do this.) *)
 
 (* FILL IN HERE *)
+Theorem rev_injective : forall l1 l2 : natlist, rev l1 = rev l2 -> l1 = l2.
+Proof.
+  intros l1 l2 H. 
+  rewrite <- rev_involutive. rewrite <- H. rewrite -> rev_involutive. 
+  reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
