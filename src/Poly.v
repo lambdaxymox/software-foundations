@@ -909,7 +909,10 @@ Proof. reflexivity. Qed.
     different? *)
 
 (* FILL IN HERE *)
-
+(* Use [fold] to compute the length of a [list]. The initial condition is [0], and 
+   the [list] can be a [list] of any type, where the folding function has type 
+   [f : X -> nat -> nat] given by [x -> n -> n + 1].
+*)
 (** [] *)
 
 (* ================================================================= *)
@@ -975,11 +978,36 @@ Definition fold_length {X : Type} (l : list X) : nat :=
 Example test_fold_length1 : fold_length [4;7;0] = 3.
 Proof. reflexivity. Qed.
 
+Theorem cons_list_r : 
+  forall (X : Type) (h : X) (l1 l2 : list X),
+  (h :: l1) ++ l2 = h :: (l1 ++ l2).
+Proof.
+  intros X h l1 l2. simpl. reflexivity.
+Qed.
+
 (** Prove the correctness of [fold_length]. *)
+Lemma fold_length_app : 
+  forall {X : Type} (l1 l2 : list X),
+  fold_length (l1 ++ l2) = fold_length l1 + fold_length l2.
+Proof.
+  assert (
+    H0 : forall (X : Type) (h1 : X) (t1 : list X),
+         fold_length (h1 :: t1) = fold_length [h1] + fold_length t1).
+  { simpl. reflexivity. }
+  intros X l1 l2. induction l1 as [| h1 t1 IHl1].
+  - simpl. reflexivity.
+  - rewrite -> cons_list_r. rewrite -> H0. 
+    rewrite -> IHl1. 
+    rewrite -> plus_assoc. rewrite <- H0.
+    reflexivity.
+Qed.
 
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
-(* FILL IN HERE *) Admitted.
+Proof.
+  intros X l. induction l as [| hl tl IHl].
+  - simpl. reflexivity.
+  - simpl.  
 (** [] *)
 
 (** **** Exercise: 3 starsM (fold_map)  *)
