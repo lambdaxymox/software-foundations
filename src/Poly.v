@@ -1153,6 +1153,9 @@ Definition two : nat :=
 Definition zero : nat :=
   fun (X : Type) (f : X -> X) (x : X) => x.
 
+Definition six : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => f (f (f (f (f (f x))))).
+
 (** More generally, a number [n] can be written as [fun X f x => f (f
     ... (f x) ...)], with [n] occurrences of [f].  Notice in
     particular how the [doit3times] function we've defined previously
@@ -1180,29 +1183,35 @@ Proof. reflexivity. Qed.
 
 (** Addition of two natural numbers: *)
 
-Definition plus (n m : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition plus (fn fm : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => fn X f (fm X f x).
+
+Example plus_0_0 : plus zero zero = zero.
+Proof. reflexivity. Qed.
 
 Example plus_1 : plus zero one = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example plus_2 : plus two three = plus three two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example plus_3 :
   plus (plus two two) three = plus one (plus three three).
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
+
+Example plus_3_3_eq_6 : plus three three = six.
+Proof. reflexivity. Qed.
 
 (** Multiplication: *)
 
-Definition mult (n m : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition mult (n m : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => n X f .
 
 Example mult_1 : mult one one = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example mult_2 : mult zero (plus three three) = zero.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example mult_3 : mult two three = plus three three.
 Proof. (* FILL IN HERE *) Admitted.
