@@ -1229,14 +1229,14 @@ Proof. reflexivity. Qed.
     a "Universe inconsistency" error, try iterating over a different
     type: [nat] itself is usually problematic.) *)
 
-Definition exp (m n : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => n X (m X f) x.
+Definition exp (m : nat) (n : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => n (X -> X) (m X) f x.
 
 Example exp_1 : exp two two = plus two two.
 Proof. reflexivity. Qed.
 
 Example exp_2 : exp three two = plus (mult two (mult two two)) one.
-Proof. Admitted.
+Proof. reflexivity. Qed.
 
 Example exp_3 : exp three zero = one.
 Proof. reflexivity. Qed.
