@@ -788,11 +788,25 @@ Proof. reflexivity.  Qed.
 (** **** Exercise: 3 stars (map_rev)  *)
 (** Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
+Theorem map_app_list : 
+  forall (X Y : Type) (f : X -> Y) (l1 l2: list X),
+  map f (l1 ++ l2) = map f l1 ++ map f l2.
+Proof.
+  intros X Y. intros f. intros l1 l2. 
+  induction l1 as [| h1 t1 IHl1].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHl1. rewrite <- IHl1.
+    reflexivity.
+Qed.
 
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y. intros f. intros l. induction l as [| hl tl IHl].
+  - simpl. reflexivity.
+  - simpl. rewrite -> map_app_list. rewrite <- IHl.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (flat_map)  *)
@@ -805,15 +819,20 @@ Proof.
         flat_map (fun n => [n;n+1;n+2]) [1;5;10]
       = [1; 2; 3; 5; 6; 7; 10; 11; 12].
 *)
+Fixpoint flatten {X : Type} (l : list (list X)) : list X :=
+  match l with
+  | [] => []
+  | l :: ls => l ++ flatten ls
+  end.
 
 Fixpoint flat_map {X Y:Type} (f:X -> list Y) (l:list X)
-                   : (list Y)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+                   : (list Y) :=
+  flatten (map f l).
 
 Example test_flat_map1:
   flat_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
- (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 (** Lists are not the only inductive type that we can write a
@@ -846,8 +865,7 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     operation that lies at the heart of Google's map/reduce
     distributed programming framework. *)
 
-Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y)
-                         : Y :=
+Fixpoint fold {X Y:Type} (f: X -> Y -> Y) (l:list X) (b:Y) : Y :=
   match l with
   | nil => b
   | h :: t => f h (fold f t b)
@@ -891,6 +909,7 @@ Proof. reflexivity. Qed.
     different? *)
 
 (* FILL IN HERE *)
+
 (** [] *)
 
 (* ================================================================= *)
