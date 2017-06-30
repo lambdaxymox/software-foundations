@@ -1183,8 +1183,8 @@ Proof. reflexivity. Qed.
 
 (** Addition of two natural numbers: *)
 
-Definition plus (fn fm : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => fn X f (fm X f x).
+Definition plus (n m : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => n X f (m X f x).
 
 Example plus_0_0 : plus zero zero = zero.
 Proof. reflexivity. Qed.
@@ -1205,7 +1205,7 @@ Proof. reflexivity. Qed.
 (** Multiplication: *)
 
 Definition mult (n m : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => n X f .
+  fun (X : Type) (f : X -> X) (x : X) => n X (m X f) x.
 
 Example mult_1 : mult one one = one.
 Proof. reflexivity. Qed.
@@ -1214,7 +1214,13 @@ Example mult_2 : mult zero (plus three three) = zero.
 Proof. reflexivity. Qed.
 
 Example mult_3 : mult two three = plus three three.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
+
+Example mult_2_3_eq_6 : mult two three = six.
+Proof. reflexivity. Qed.
+
+Example mult_1_6_eq_6 : mult one six = six.
+Proof. reflexivity. Qed.
 
 (** Exponentiation: *)
 
@@ -1223,17 +1229,17 @@ Proof. (* FILL IN HERE *) Admitted.
     a "Universe inconsistency" error, try iterating over a different
     type: [nat] itself is usually problematic.) *)
 
-Definition exp (n m : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition exp (n m : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => n X ((mult m one) X f) x.
 
 Example exp_1 : exp two two = plus two two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example exp_2 : exp three two = plus (mult two (mult two two)) one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. Admitted.
 
 Example exp_3 : exp three zero = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 End Church.
 (** [] *)
