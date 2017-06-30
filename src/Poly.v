@@ -1005,9 +1005,14 @@ Qed.
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
 Proof.
+  assert (
+    H0 : forall (X : Type) (h1 : X) (t1 : list X),
+         fold_length (h1 :: t1) = fold_length [h1] + fold_length t1).
+  { simpl. reflexivity. }
   intros X l. induction l as [| hl tl IHl].
   - simpl. reflexivity.
-  - simpl.  
+  - rewrite -> H0. simpl. rewrite -> IHl. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 starsM (fold_map)  *)
