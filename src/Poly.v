@@ -1169,8 +1169,8 @@ Definition three : nat := @doit3times.
 
 (** Successor of a natural number: *)
 
-Definition succ (fn : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => f (fn X f x).
+Definition succ (n : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => f (n X f x). 
 
 Example succ_1 : succ zero = one.
 Proof. reflexivity. Qed.
@@ -1183,8 +1183,8 @@ Proof. reflexivity. Qed.
 
 (** Addition of two natural numbers: *)
 
-Definition plus (n m : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => n X f (m X f x).
+Definition plus (m n : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => m X f (n X f x).
 
 Example plus_0_0 : plus zero zero = zero.
 Proof. reflexivity. Qed.
@@ -1204,8 +1204,8 @@ Proof. reflexivity. Qed.
 
 (** Multiplication: *)
 
-Definition mult (n m : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => n X (m X f) x.
+Definition mult (m n : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => m X (n X f) x.
 
 Example mult_1 : mult one one = one.
 Proof. reflexivity. Qed.
@@ -1229,8 +1229,8 @@ Proof. reflexivity. Qed.
     a "Universe inconsistency" error, try iterating over a different
     type: [nat] itself is usually problematic.) *)
 
-Definition exp (n m : nat) : nat :=
-  fun (X : Type) (f : X -> X) (x : X) => n X ((mult m one) X f) x.
+Definition exp (m n : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => n X (m X f) x.
 
 Example exp_1 : exp two two = plus two two.
 Proof. reflexivity. Qed.
