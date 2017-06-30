@@ -1019,13 +1019,23 @@ Qed.
 (** We can also define [map] in terms of [fold].  Finish [fold_map]
     below. *)
 
-Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y :=
+  fold (fun x => fun l' => f x :: l') l [].
 
 (** Write down a theorem [fold_map_correct] in Coq stating that
    [fold_map] is correct, and prove it. *)
 
 (* FILL IN HERE *)
+Theorem fold_map_correct : 
+  forall (X Y : Type) (f : X -> Y -> Y) (l : list X),
+  fold_map f l = map f l.
+Proof.
+  intros X Y f l. induction l as [| hl tl IHl].
+  - simpl. reflexivity.
+  - assert (H0 : fold_map f (hl :: tl) = f hl :: fold_map f tl).
+    { reflexivity. }
+    simpl. rewrite -> H0. rewrite -> IHl. reflexivity. 
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (currying)  *)
@@ -1051,8 +1061,7 @@ Definition prod_curry {X Y Z : Type}
     the theorems below to show that the two are inverses. *)
 
 Definition prod_uncurry {X Y Z : Type}
-  (f : X -> Y -> Z) (p : X * Y) : Z
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  (f : X -> Y -> Z) (p : X * Y) : Z := f (fst p) (snd p).
 
 (** As a (trivial) example of the usefulness of currying, we can use it
     to shorten one of the examples that we saw above: *)
@@ -1066,18 +1075,37 @@ Proof. reflexivity.  Qed.
 Check @prod_curry.
 Check @prod_uncurry.
 
-Theorem uncurry_curry : forall (X Y Z : Type)
+Theorem uncurry_curry_id : forall (X Y Z : Type)
                         (f : X -> Y -> Z)
                         x y,
   prod_curry (prod_uncurry f) x y = f x y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y Z. intros f. intros x y. reflexivity.
+Qed.
 
-Theorem curry_uncurry : forall (X Y Z : Type)
+Lemma uncurry_curry : 
+  forall (X Y Z : Type) (f : X -> Y -> Z) (x : X) (y : Y),
+  (prod_uncurry f) (x, y) = f x y.
+Proof.
+  intros X Y Z. intros f. intros x y. reflexivity.
+Qed.
+
+Lemma curry_uncurry :
+  forall (X Y Z : Type) (f : X * Y -> Z) (p : X * Y),
+  (prod_curry f) (fst p) (snd p) = f p.
+Proof.
+  intros X Y Z. intros f. intros p. destruct p.
+  - simpl. reflexivity.
+Qed.
+
+Theorem curry_uncurry_id : forall (X Y Z : Type)
                         (f : (X * Y) -> Z) (p : X * Y),
   prod_uncurry (prod_curry f) p = f p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X Y Z. intros f p. 
+  unfold prod_curry. unfold prod_uncurry. destruct p. 
+  simpl. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advancedM (nth_error_informal)  *)
@@ -1138,17 +1166,17 @@ Definition three : nat := @doit3times.
 
 (** Successor of a natural number: *)
 
-Definition succ (n : nat) : nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition succ (fn : nat) : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => f (fn X f x).
 
 Example succ_1 : succ zero = one.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example succ_2 : succ one = two.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 Example succ_3 : succ two = three.
-Proof. (* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 
 (** Addition of two natural numbers: *)
 
