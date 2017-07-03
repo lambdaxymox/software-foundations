@@ -826,11 +826,25 @@ Proof.
 Qed.
 (** [] *)
 
+Lemma or_false_app : forall (P : Prop), False \/ P -> P.
+Proof.
+  intros P. intros H. destruct H as [HFalse | HP].
+  - destruct HFalse.
+  - apply HP.
+Qed.
+
 (** **** Exercise: 2 stars (in_app_iff)  *)
 Lemma in_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A l l'. induction l.
+  - intros a. split.
+    + simpl. intros H. right. apply H.
+    + simpl. intros H. apply or_false_app in H as H'. apply H'.
+  - intros a. split. 
+    + simpl. rewrite <- or_assoc. rewrite -> IHl. intros H. apply H. 
+    + simpl. rewrite -> IHl. rewrite -> or_assoc. intros H. apply H. 
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (All)  *)
