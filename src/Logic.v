@@ -309,9 +309,12 @@ Qed.
 
 Lemma or_intro1 : forall A B : Prop, A -> A \/ B.
 Proof.
-  intros A B HA.
-  left.
-  apply HA.
+  intros A B HA. left. apply HA.
+Qed.
+
+Lemma or_intro2 : forall A B : Prop, B -> A \/ B.
+Proof.
+  intros A B HB. right. apply HB.
 Qed.
 
 (** ... and a slightly more interesting example requiring both [left]
@@ -703,7 +706,8 @@ Proof.
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X P H. unfold not. intros HE. destruct HE. apply H0. apply H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars (dist_exists_or)  *)
@@ -713,7 +717,14 @@ Proof.
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
+  intros X P Q. split.
+  - intros HE. destruct HE. destruct H as [HP | HQ].
+    + left. exists x. apply HP.
+    + right. exists x. apply HQ.
+  - intros HE. destruct HE. destruct H.
+    + exists x. apply or_intro1. apply H.
+    + destruct H. exists x. apply or_intro2. apply H.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
