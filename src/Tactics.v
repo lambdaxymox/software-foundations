@@ -1179,7 +1179,82 @@ Qed.
     Finally, prove a theorem [existsb_existsb'] stating that
     [existsb'] and [existsb] have the same behavior. *)
 
-(* FILL IN HERE *)
+
+Fixpoint forallb {X : Type} (p : X -> bool) (l : list X) : bool :=
+  match l with
+  | []      => true
+  | x :: xs => andb (p x) (forallb p xs)
+  end.
+
+Example forallb1 : forallb oddb [1;3;5;7;9] = true.
+Proof. reflexivity. Qed.
+
+Example forallb2 : forallb negb [false;false] = true.
+Proof. reflexivity. Qed.
+
+Example forallb3 : forallb evenb [0;2;4;5] = false.
+Proof. reflexivity. Qed.
+
+Example forallb4 : forallb (beq_nat 5) [] = true.
+Proof. reflexivity. Qed.
+
+Fixpoint existsb {X : Type} (p : X -> bool) (l : list X) : bool :=
+  match l with
+  | [] => false
+  | x :: xs => orb (p x) (existsb p xs)
+  end.
+
+Example existsb1 : existsb (beq_nat 5) [0;2;3;6] = false.
+Proof. reflexivity. Qed.
+
+Example existsb2 : existsb (andb true) [true;true;false] = true.
+Proof. reflexivity. Qed.
+
+Example existsb3 : existsb oddb [1;0;0;0;0;3] = true.
+Proof. reflexivity. Qed.
+
+Example existsb4 : existsb evenb [] = false.
+Proof. reflexivity. Qed.
+
+Definition existsb' {X : Type} (p : X -> bool) (l : list X) :=
+  negb (forallb (fun x => negb (p x)) l).
+
+Theorem demorgan1 : forall (a b : bool), orb a b = negb (andb (negb a) (negb b)).
+Proof.
+  intros a b. destruct a.
+  - simpl. reflexivity.
+  - simpl. destruct b.
+    + reflexivity.
+    + reflexivity.
+Qed.
+
+Theorem negb_involutive : forall (a : bool), negb (negb a) = a.
+Proof. 
+  intros a. destruct a. 
+  - reflexivity. 
+  - reflexivity.
+Qed.
+
+Theorem demorgan2 : forall (a b : bool), 
+  orb a (negb b) = negb (andb (negb a) b).
+Proof.
+  intros a b. destruct a.
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
+
+Theorem existb_equiv : 
+  forall (X : Type) (p : X -> bool) (l : list X), 
+  existsb p l = existsb' p l.
+Proof.
+  intros X p l. generalize dependent p.
+  induction l as [|hl tl IHl].
+  - intros p. simpl. reflexivity.
+  - intros p. simpl. unfold existsb'. simpl.
+    rewrite <- demorgan2. apply f_equal. 
+    rewrite IHl. unfold existsb'. apply f_equal. apply f_equal. 
+    reflexivity.
+Qed.
 (** [] *)
 
 (** $Date: 2016-10-08 18:36:21 -0400 (Sat, 08 Oct 2016) $ *)
