@@ -535,6 +535,15 @@ Fixpoint split {X Y : Type}
                (l : list (X*Y)) : (list X) * (list Y) :=
   (fst_split l, snd_split l).
 
+Theorem split_app1 : 
+  forall (X Y : Type) (l : list (X * Y)),
+  split l = (fst_split l, snd_split l).
+Proof.
+  intros  X Y l. destruct l.
+  - simpl. reflexivity.
+  - unfold split. reflexivity.
+Qed.
+
 Example test_split:
   split [(1,false);(2,false)] = ([1;2],[false;false]).
 Proof. reflexivity. Qed.
