@@ -1112,15 +1112,57 @@ Qed.
     your induction hypothesis general by not doing [intros] on more
     things than necessary.  Hint: what property do you need of [l1]
     and [l2] for [split] [combine l1 l2 = (l1,l2)] to be true?) *)
+Lemma fst_split_combine :
+  forall (X Y : Type) (l1 : list X) (l2 : list Y),
+  length l1 = length l2 -> fst_split (combine l1 l2) = l1.
+Proof.
+  intros X Y. intros l1. induction l1 as [| h1' l1' IHl1].
+  - simpl. reflexivity.
+  - intros l2. destruct l2 as [| h2' l2'].
+    + simpl. intros H. inversion H.
+    + intros H. simpl. f_equal. inversion H. apply IHl1. apply H1.
+Qed.
 
-Definition split_combine_statement : Prop
+Lemma list_length_zero : 
+  forall (X : Type) (l : list X),
+  length l = 0 -> l = [].
+Proof.
+  intros X l H. destruct l.
+  - reflexivity.
+  - inversion H.
+Qed.
+
+Lemma snd_split_combine :
+  forall (X Y : Type) (l1 : list X) (l2 : list Y),
+  length l1 = length l2 -> snd_split (combine l1 l2) = l2.
+Proof.
+  intros X Y. intros l2. induction l2 as [| h2' l2' IHl2].
+  - simpl. intros l2 H. rewrite -> list_length_zero. 
+    reflexivity. symmetry. apply H.
+  - intros l1. destruct l1 as [| h1' l1'].
+    + simpl. reflexivity.
+    + simpl. intros H. inversion H as [H']. rewrite -> IHl2. 
+      reflexivity. apply H'.
+Qed.
+
+Definition split_combine_statement : Prop :=
   (* ("[: Prop]" means that we are giving a name to a
      logical proposition here.) *)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  forall (X Y : Type) (l1 : list X) (l2 : list Y) (l : list (X * Y)),
+  length l1 = length l2 -> combine l1 l2 = l -> split l = (l1, l2).
 
 Theorem split_combine : split_combine_statement.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X Y l1. induction l1 as [| h1 t1 IHl1].
+  - simpl. intros l2. destruct l2 as [| h2 t2].
+    + simpl. intros l H0 H1. rewrite <- H1. simpl. reflexivity.
+    + simpl. intros l H0 H1. inversion H0.
+  - intros l2. destruct l2 as [| h2 t2].
+    + intros l H0 H1. inversion H0.
+    + simpl. intros l H0 H1. inversion H1. simpl. inversion H0 as [H0'].
+      rewrite -> fst_split_combine. rewrite -> snd_split_combine.
+      reflexivity. apply H0'. apply H0'.
+Qed.
 
 
 (** [] *)
@@ -1132,6 +1174,12 @@ Lemma list_head1 : forall (X : Type) (h1 h2 : X) (l1 l2 : list X),
           h1 :: l1 = h2 :: l2 -> h1 = h2.
 Proof.
   intros X h1 h2 l1 l2. intros H. inversion H. reflexivity.
+Qed.
+
+Lemma list_tail1 : forall (X : Type) (h1 h2 : X) (l1 l2 : list X),
+          h1 :: l1 = h2 :: l2 -> t1 = t2.
+Proof.
+  intros. 
 Qed.
 
 Theorem filter_exercise : 
