@@ -1128,13 +1128,25 @@ Proof.
 (** **** Exercise: 3 stars, advanced (filter_exercise)  *)
 (** This one is a bit challenging.  Pay attention to the form of your
     induction hypothesis. *)
-
-Theorem filter_exercise : forall (X : Type) (test : X -> bool)
-                             (x : X) (l lf : list X),
-     filter test l = x :: lf ->
-     test x = true.
+Lemma list_head1 : forall (X : Type) (h1 h2 : X) (l1 l2 : list X),
+          h1 :: l1 = h2 :: l2 -> h1 = h2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X h1 h2 l1 l2. intros H. inversion H. reflexivity.
+Qed.
+
+Theorem filter_exercise : 
+  forall (X : Type) (test : X -> bool) (x : X) (l lf : list X),
+  filter test l = x :: lf -> test x = true.
+Proof.
+  intros X test x l. generalize dependent test. generalize dependent x.
+  induction l as [|hl tl IHl].
+  - simpl. intros x test lf H. inversion H.
+  - simpl. intros x test lf H. destruct (test x) eqn : Htest.
+    + reflexivity. 
+    + rewrite <- Htest. destruct (test hl) eqn : Hhl.
+      * apply list_head1 in H as H'. rewrite <- H'. apply Hhl. 
+      * rewrite IHl with x test lf. reflexivity. apply H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, recommended (forall_exists_challenge)  *)
