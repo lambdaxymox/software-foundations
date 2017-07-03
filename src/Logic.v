@@ -809,7 +809,10 @@ Lemma In_map_iff :
     In y (map f l) <->
     exists x, f x = y /\ In x l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A B f l y. induction l as [| x xs IHl].
+  - 
+  -
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars (in_app_iff)  *)
