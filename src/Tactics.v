@@ -1274,19 +1274,19 @@ Proof.
     + reflexivity.
 Qed.
 
-Theorem negb_involutive : forall (a : bool), negb (negb a) = a.
-Proof. 
-  intros a. destruct a. 
-  - reflexivity. 
-  - reflexivity.
-Qed.
-
 Theorem demorgan2 : forall (a b : bool), 
   orb a (negb b) = negb (andb (negb a) b).
 Proof.
   intros a b. destruct a.
   - simpl. reflexivity.
   - simpl. reflexivity.
+Qed.
+
+Theorem negb_involutive : forall (a : bool), negb (negb a) = a.
+Proof. 
+  intros a. destruct a. 
+  - reflexivity. 
+  - reflexivity.
 Qed.
 
 Theorem existb_equiv : 
