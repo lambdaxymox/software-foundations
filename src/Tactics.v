@@ -1175,9 +1175,11 @@ Proof.
 Qed.
 
 Lemma list_tail1 : forall (X : Type) (h1 h2 : X) (l1 l2 : list X),
-          h1 :: l1 = h2 :: l2 -> t1 = t2.
+          h1 :: l1 = h2 :: l2 -> l1 = l2.
 Proof.
-  intros. 
+  intros. destruct l1.
+  - inversion H. reflexivity.
+  - inversion H. reflexivity.
 Qed.
 
 Theorem filter_exercise : 
