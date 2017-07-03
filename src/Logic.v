@@ -575,19 +575,35 @@ Qed.
 Theorem iff_refl : forall P : Prop,
   P <-> P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P. split.
+  - intros HP. apply HP.
+  - intros HP. apply HP.
+Qed.
 
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q R. intros HPQ HQR. split.
+  - intros HP. inversion HPQ as [HPQ1 HPQ2]. inversion HQR as [HQR1 HQR2].
+    apply HPQ1 in HP as HQ. apply HQR1 in HQ as HR. apply HR.
+  - intros HR. apply HQR in HR as HQ. apply HPQ in HQ as HP. apply HP.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold iff. intros P Q R. split. 
+  - intros H. destruct H as [HP | [HQ HR]].
+    + split. left. assumption. left. assumption.
+    + split. right. assumption. right. assumption.
+  - intros H. destruct H as [[HP | HQ] [HP' | HR]].
+    + left. assumption.
+    + left. assumption.
+    + left. assumption.
+    + right. split. assumption. assumption. 
+Qed.
 (** [] *)
 
 (** Some of Coq's tactics treat [iff] statements specially, avoiding
