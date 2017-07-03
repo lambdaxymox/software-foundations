@@ -1163,8 +1163,6 @@ Proof.
       rewrite -> fst_split_combine. rewrite -> snd_split_combine.
       reflexivity. apply H0'. apply H0'.
 Qed.
-
-
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (filter_exercise)  *)
