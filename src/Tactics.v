@@ -1086,21 +1086,17 @@ Theorem beq_nat_trans : forall n m p,
   beq_nat n m = true -> beq_nat m p = true -> beq_nat n p = true.
 Proof.
   intros n. induction n as [| n' IHn'].
-  - intros m. destruct m.
-    + intros p H00 H0p. apply H0p.
-    + intros p. intros H0m. destruct p.
-      * intros Hm0. simpl. reflexivity.
-      * inversion H0m.
-  - intros m. destruct m.
-    + intros p. intros Hn0. destruct p.
-      * intros H00. apply Hn0.
-      * inversion Hn0. 
-    + intros p. destruct p.
-      * intros Hnm. intros Hm0. inversion Hm0.
-      * intros Hnm. intros Hmp. 
-        inversion Hnm as [Hnm']. inversion Hmp as [Hmp'].
+  - intros m p. destruct m.
+    + intros H00 H0p. apply H0p.
+    + intros H0m. inversion H0m.
+  - intros m p. destruct m.
+    + intros Hn0. inversion Hn0.
+    + intros Hnm. destruct p.
+      * intros Hm0. inversion Hm0.
+      * intros Hmp. inversion Hnm as [Hnm']. inversion Hmp as [Hmp'].
         simpl. rewrite -> Hnm'.
-        rewrite IHn' with m p. reflexivity. apply Hnm'. apply Hmp'.
+        rewrite IHn' with m p. reflexivity.
+        apply Hnm'. apply Hmp'.
 Qed.
 (** [] *)
 
