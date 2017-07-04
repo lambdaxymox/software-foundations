@@ -918,7 +918,11 @@ Theorem combine_odd_even_elim_even :
     oddb n = false ->
     Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n. unfold combine_odd_even. unfold oddb.
+  destruct evenb.
+  - intros Heven. intros H. apply Heven.
+  - intros Hodd. intros H. inversion H.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -1152,9 +1156,30 @@ Definition tr_rev {X} (l : list X) : list X :=
     performed (i.e., we don't have to execute [++] after the recursive
     call); a decent compiler will generate very efficient code in this
     case.  Prove that the two definitions are indeed equivalent. *)
+Lemma rev_append_split1 :
+  forall (X : Type) (x : X) (xs : list X),
+  rev_append (x :: xs) [] = rev_append xs [x].
+Proof.
+  intros X x xs. simpl. reflexivity.
+Qed.
+
+Lemma rev_append_split2 : 
+  forall (X : Type) (x : X) (xs : list X),
+  rev_append xs [x] = rev_append xs [] ++ [x].
+Proof.
+  intros X x xs. generalize dependent x. induction xs.
+  - auto.
+  - simpl. intros x0. rewrite -> IHxs. rewrite <- app_assoc.
+Admitted.
 
 Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
-(* FILL IN HERE *) Admitted.
+Proof.
+  intros X. apply functional_extensionality. intros x.
+  induction x as [| x' xs IHxs].
+  - unfold tr_rev. simpl. reflexivity.
+  - simpl. rewrite <- IHxs. unfold tr_rev. simpl.
+    apply rev_append_split2.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -1187,7 +1212,13 @@ Theorem evenb_double_conv : forall n,
                 else S (double k).
 Proof.
   (* Hint: Use the [evenb_S] lemma from [Induction.v]. *)
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n.
+  - simpl. exists 0. reflexivity.
+  - rewrite -> evenb_S. 
+    destruct evenb. destruct IHn. exists x. 
+    + simpl. rewrite <- H. reflexivity. 
+    + simpl. destruct IHn. rewrite -> H. exists (S x). simpl. reflexivity.
+Qed.
 (** [] *)
 
 Theorem even_bool_prop : forall n,
