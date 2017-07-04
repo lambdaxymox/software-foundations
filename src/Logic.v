@@ -858,15 +858,18 @@ Qed.
     lemma below.  (Of course, your definition should _not_ just
     restate the left-hand side of [All_In].) *)
 
-Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
+  match l with
+  | []      => False
+  | x :: xs => P x /\ All P xs
+  end.
 
 Lemma All_In :
   forall T (P : T -> Prop) (l : list T),
-    (forall x, In x l -> P x) <->
-    All P l.
+    (forall x, In x l -> P x) <-> All P l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T P l. split. 
+Admitted.
 (** [] *)
 
 (** **** Exercise: 3 stars (combine_odd_even)  *)
@@ -876,8 +879,12 @@ Proof.
     equivalent to [Podd n] when [n] is odd and equivalent to [Peven n]
     otherwise. *)
 
-Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
+  fun n => 
+    match (evenb n) with
+    | true  => Peven n
+    | false => Podd n
+    end.
 
 (** To test your definition, prove the following facts: *)
 
@@ -887,7 +894,11 @@ Theorem combine_odd_even_intro :
     (oddb n = false -> Peven n) ->
     combine_odd_even Podd Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n. unfold oddb. unfold combine_odd_even.
+  intros Heven Hodd. destruct evenb.
+  - apply Hodd. simpl. reflexivity.
+  - apply Heven. simpl. reflexivity.
+Qed.
 
 Theorem combine_odd_even_elim_odd :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -895,7 +906,11 @@ Theorem combine_odd_even_elim_odd :
     oddb n = true ->
     Podd n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros Podd Peven n. unfold oddb. unfold combine_odd_even.
+  destruct evenb.
+  - intros Heven. intros H. inversion H.
+  - intros Hodd. intros H. apply Hodd.
+Qed.
 
 Theorem combine_odd_even_elim_even :
   forall (Podd Peven : nat -> Prop) (n : nat),
