@@ -1331,12 +1331,22 @@ Proof. apply even_bool_prop. reflexivity. Qed.
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b1 b2. split.
+  - intros H. destruct b1. auto. inversion H.
+  - intros H. destruct b1. 
+    + simpl. apply H. 
+    + simpl. destruct H as [H0 H1]. apply H0.
+Qed.
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b1 b2. split.
+  - intros H. destruct b1. auto. auto.
+  - intros H. destruct b1.
+    + simpl. reflexivity.
+    + simpl. destruct H as [H1|H2]. inversion H1. apply H2. 
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star (beq_nat_false_iff)  *)
@@ -1347,7 +1357,20 @@ Proof.
 Theorem beq_nat_false_iff : forall x y : nat,
   beq_nat x y = false <-> x <> y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros x y. split. generalize dependent y. 
+  - induction x.
+    + intros y H. destruct y. inversion H. trivial.
+    + intros y H. destruct y. 
+      * congruence.
+      * inversion H as [H']. apply IHx in H' as H''. congruence.
+  - generalize dependent y. generalize dependent x. induction x.
+    + destruct y. intros.
+      * auto. simpl. congruence.
+      * auto.
+    + destruct y.
+      * auto.
+      * simpl. intros H. auto.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (beq_list)  *)
