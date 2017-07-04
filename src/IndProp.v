@@ -428,8 +428,15 @@ Inductive ev' : nat -> Prop :=
 
 Theorem ev'_ev : forall n, ev' n <-> ev n.
 Proof.
- (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n. split.
+  intros H. induction H.
+  - apply ev_0.
+  - apply ev_SS. apply ev_0.
+  - apply ev_sum. apply IHev'1. apply IHev'2.
+  - intros Hn. induction Hn. apply ev'_0. apply ev'_sum with (n := 2).
+    apply ev'_2. apply IHHn.
+Qed.
+(** [] *) *)
 
 (** **** Exercise: 3 stars, advanced, recommended (ev_ev__ev)  *)
 (** Finding the appropriate thing to do induction on is a
@@ -438,7 +445,11 @@ Proof.
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m. intros HSnSm. intros Hn. induction Hn.
+  - rewrite -> plus_n_O. rewrite -> plus_comm. apply HSnSm. 
+  - simpl in HSnSm. apply evSS_ev in HSnSm as Hnm. 
+    apply IHHn. apply Hnm.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
@@ -449,7 +460,8 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros m n p Hnm Hnp. 
+Qed.
 (** [] *)
 
 (* ################################################################# *)
