@@ -770,7 +770,10 @@ End R.
       Hint: choose your induction carefully! *)
 
 (* FILL IN HERE *)
-
+Inductive subseq : list nat -> list nat -> Prop :=
+| SeqEmpty l      : subseq [] l
+| SeqMiss elem l1 l2 : subseq l1 l2 -> subseq l1 (elem :: l2)
+| SeqHit elem l1 l2  : subseq l1 l2 -> subseq (elem :: l1) (elem :: l2).
 (** [] *)
 
 (** **** Exercise: 2 stars, optionalM (R_provability2)  *)
