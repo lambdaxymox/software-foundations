@@ -710,8 +710,13 @@ Inductive R : nat -> nat -> nat -> Prop :=
       sentence) explain your answer.
 
 (* FILL IN HERE *)
-[]
 *)
+Theorem tr112 : R 1 1 2.
+Proof.
+  apply c2. apply c3. apply c1.
+Qed.
+(** [] *)
+
 
 (** **** Exercise: 3 stars, optional (R_fact)  *)
 (** The relation [R] above actually encodes a familiar function.
@@ -765,6 +770,7 @@ End R.
       Hint: choose your induction carefully! *)
 
 (* FILL IN HERE *)
+
 (** [] *)
 
 (** **** Exercise: 2 stars, optionalM (R_provability2)  *)
