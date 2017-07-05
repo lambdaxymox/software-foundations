@@ -1444,8 +1444,9 @@ Proof.
        | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
   - (* MEmpty *)
     simpl. omega.
-  (* FILL IN HERE *) Admitted.
-
+  - simpl. omega.
+  - 
+Admitted.
 End Pumping.
 (** [] *)
 
@@ -1533,7 +1534,14 @@ Qed.
 (** **** Exercise: 2 stars, recommended (reflect_iff)  *)
 Theorem reflect_iff : forall P b, reflect P b -> (P <-> b = true).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P b H1. destruct b.
+  - split.
+    + intros H2. reflexivity. 
+    + intros H2. inversion H1. apply H.
+  - split.
+    + intros H2. inversion H1. unfold not in H. destruct H. apply H2.
+    + intros H2. inversion H2.
+Qed.
 (** [] *)
 
 (** The advantage of [reflect] over the normal "if and only if"
