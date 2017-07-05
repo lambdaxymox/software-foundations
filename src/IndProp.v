@@ -1036,13 +1036,29 @@ Qed.
 Lemma empty_is_empty : forall T (s : list T),
   ~ (s =~ EmptySet).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s. unfold not. intros H. inversion H.
+Qed.
+
+Lemma MUnion1 : forall T (s : list T) (re1 re2 : reg_exp T),
+  s =~  re1 -> s =~ Union re1 re2.
+Proof.
+  intros T s re1 re2 H. apply MUnionL. apply H.
+Qed.
+
+Lemma MUnion2 : forall T (s : list T) (re1 re2 : reg_exp T),
+  s =~ re2 -> s =~ Union re1 re2.
+Proof.
+  intros T s re1 re2 H. apply MUnionR. apply H.
+Qed.
 
 Lemma MUnion' : forall T (s : list T) (re1 re2 : reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s re1 re2 H. destruct H.
+  - apply MUnion1. assumption.
+  - apply MUnion2. assumption. 
+Qed.
 
 (** The next lemma is stated in terms of the [fold] function from the
     [Poly] chapter: If [ss : list (list T)] represents a sequence of
@@ -1053,7 +1069,12 @@ Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp T),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T ss re H. induction ss.
+  - simpl. apply MStar0.
+  - simpl. apply MStarApp.
+    + apply H. simpl. left. reflexivity.
+    + apply IHss. intros s Hin. apply H. simpl. right. apply Hin.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars (reg_exp_of_list)  *)
