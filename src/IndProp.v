@@ -774,6 +774,34 @@ Inductive subseq : list nat -> list nat -> Prop :=
 | SeqEmpty l      : subseq [] l
 | SeqMiss elem l1 l2 : subseq l1 l2 -> subseq l1 (elem :: l2)
 | SeqHit elem l1 l2  : subseq l1 l2 -> subseq (elem :: l1) (elem :: l2).
+
+Theorem subseq_refl : forall l : list nat, subseq l l.
+Proof.
+  intros l. induction l.
+  - apply SeqEmpty.
+  - apply SeqHit. apply IHl.
+Qed.
+
+Theorem subseq_app : forall l1 l2 l3 : list nat, 
+  subseq l1 l2 -> subseq l1 (l2 ++ l3).
+Proof.
+  intros l1 l2 l3. intros H. induction H.
+  - simpl. apply SeqEmpty.
+  - simpl. apply SeqMiss. apply IHsubseq.
+  - simpl. apply SeqHit. apply IHsubseq.
+Qed.
+
+Theorem subseq_trans : forall l1 l2 l3: list nat,
+  subseq l1 l2 -> subseq l2 l3 -> subseq l1 l3.
+Proof.
+  intros l1 l2 l3 H12 H23. 
+  generalize dependent H12. 
+  generalize dependent l1. induction H23.
+  - intros l1 H1. inversion H1. apply SeqEmpty.
+  - intros l0 H1. apply SeqMiss. apply IHsubseq. apply H1.
+  - intros l0 H1. inversion H1. apply SeqEmpty. apply SeqMiss.
+    auto. constructor 3. apply IHsubseq. apply H2.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optionalM (R_provability2)  *)
