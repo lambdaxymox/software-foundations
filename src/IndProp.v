@@ -1346,7 +1346,22 @@ Lemma MStar'' : forall T (s : list T) (re : reg_exp T),
     s = fold app ss []
     /\ forall s', In s' ss -> s' =~ re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T s re H. remember (Star re) as re'. induction H.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'.
+  - inversion Heqre'. exists nil. simpl. split. reflexivity.
+    intros s. apply ex_falso_quodlibet.
+  - destruct IHexp_match2 as [ss IHx]. (* apply Heqre'. exists [s1;s2]. split.*)
+    * apply Heqre'.
+    (* * simpl. rewrite -> app_assoc. rewrite -> app_nil_r. reflexivity. *)
+    * destruct IHx. exists (s1 :: ss). split. 
+      simpl. rewrite H1. reflexivity.
+      intros s' Hin. simpl in Hin. destruct Hin. congruence.
+      apply H2. assumption.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (pumping)  *)
