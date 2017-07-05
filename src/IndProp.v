@@ -1173,13 +1173,43 @@ Qed.
     regular expression matches some string. Prove that your function
     is correct. *)
 
-Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool :=
+  match re with
+  | EmptySet      => false
+  | EmptyStr      => true
+  | Char _        => true
+  | App re1 re2   => andb (re_not_empty re1) (re_not_empty re2)
+  | Union re1 re2 => orb (re_not_empty re1) (re_not_empty re2)
+  | Star re       => true
+  end.
 
 Lemma re_not_empty_correct : forall T (re : reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros T re. split.
+  - induction re.
+    + intros H. simpl. inversion H. inversion H0.
+    + intros H. simpl. reflexivity.
+    + intros H. simpl. reflexivity.
+    + intros H. simpl. apply andb_true_iff. destruct H. split.
+      * inversion H. apply IHre1. exists s1. apply H3.
+      * inversion H. apply IHre2. exists s2. apply H4.
+    + intros H. simpl. inversion H. apply orb_true_iff. destruct H. inversion H.
+      left. apply IHre1. exists s1. rewrite <- H2 in H3. apply H3.
+      right. apply IHre2. exists s2. rewrite <- H2 in H3. apply H3.
+    + intros H. simpl. reflexivity.
+  - induction re.
+    + intros H. inversion H.
+    + intros H. exists nil. apply MEmpty.
+    + intros H. exists [t]. apply MChar.
+    + intros H. inversion H. apply andb_true_iff in H1. destruct H1.
+      destruct IHre1. apply H0. destruct IHre2. apply H1. 
+      exists (x ++ x0). apply MApp. apply H2. apply H3.
+    + intros H. inversion H. apply orb_true_iff in H1. inversion H1.
+      destruct IHre1. apply H0. exists x. apply MUnionL. apply H2.
+      destruct IHre2. apply H0. exists x. apply MUnionR. apply H2.
+    + intros H. exists nil. apply MStar0.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
