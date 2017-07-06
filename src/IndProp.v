@@ -1589,10 +1589,34 @@ Fixpoint count n l :=
   | m :: l' => (if beq_nat n m then 1 else 0) + count n l'
   end.
 
+Theorem prop_or_app1 : forall P Q : Prop, ~P -> P \/ Q -> Q.
+Proof.
+Admitted.
+
+Lemma prop_or_app2 : forall (n m : nat) (P : Prop), 
+  n <> m -> n = m \/ P -> P.
+Proof.
+Admitted.
+
+Lemma eq_symm : forall (X : Type) (a b : X), a = b -> b = a.
+Proof.
+  intros X a b. intros H. rewrite -> H. reflexivity.
+Qed.
+
 Theorem beq_natP_practice : forall n l,
   count n l = 0 -> ~(In n l).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n l. induction l as [| h t IHl].
+  - simpl. intros H. unfold not. intros HFalse. apply HFalse.
+  - simpl. intros H. unfold not. 
+    destruct (beq_natP n h) as [H2|H3].
+    + destruct IHl. inversion H. inversion H.
+    + intros H1.  destruct IHl. apply H. 
+      apply prop_or_app2 with (n := n) (m := h).
+      apply H3. destruct H1. 
+      left. auto. 
+      right. assumption.
+Qed.
 (** [] *)
 
 (** This technique gives us only a small gain in convenience for
