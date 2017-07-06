@@ -1591,7 +1591,9 @@ Fixpoint count n l :=
 
 Theorem prop_or_app1 : forall P Q : Prop, ~P -> P \/ Q -> Q.
 Proof.
-Admitted.
+  intros P Q HPnot HPQ. inversion HPQ. unfold not in HPnot.
+  destruct HPnot. apply H. apply H.
+Qed.
 
 Lemma prop_or_app2 : forall (n m : nat) (P : Prop), 
   n <> m -> n = m \/ P -> P.
