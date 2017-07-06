@@ -1725,6 +1725,81 @@ Abort.
     not a [Fixpoint].)  *)
 
 (* FILL IN HERE *)
+Inductive in_order_merge {X : Type} : list X -> list X -> list X -> Prop :=
+| Empty : in_order_merge [] [] []
+| MergeL x : forall (l1 l2 l : list X), in_order_merge l1 l2 l -> in_order_merge (x :: l1) l2 (x :: l)
+| MergeR x : forall (l1 l2 l : list X), in_order_merge l1 l2 l -> in_order_merge l1 (x :: l2) (x :: l)
+.
+
+Example in_order_merge_ex1 : in_order_merge [1;6;2] [4;3] [1;4;6;3;2].
+Proof. constructor. constructor. constructor. 
+       constructor. constructor. constructor.
+Qed.
+
+Example in_order_merge_ex2 : 
+  in_order_merge [1;3;7] [5;3;6;8] [1;5;3;3;7;6;8].
+Proof. repeat constructor. Qed.
+
+Lemma filter_app_test_false0 : 
+  forall (X : Type) (test : X -> bool) (x : X) (l : list X),
+  test x = false -> filter test (x :: l) = filter test l.
+Proof.
+  intros X test x l H. simpl. rewrite -> H. reflexivity.
+Qed.
+
+Lemma filter_length0 : 
+  forall (X : Type) (test : X -> bool) (l : list X),
+  length (filter test l) <= length l.
+Proof.
+  assert(H0 : forall (X : Type) (x : X) (l : list X),
+              length (x :: l) = 1 + length l).
+  { intros X x l. simpl. reflexivity. }
+  intros X test l. induction l.
+  - auto.
+  - destruct (test x) eqn : Heqx.
+    + simpl. rewrite -> Heqx. rewrite -> H0. simpl.
+Admitted.
+
+Lemma filter_app0 :
+  forall (X : Type) (test : X -> bool) (x : X) (l : list X),
+  filter test (x :: l) = x :: l -> test x = true.
+Proof.
+  intros X test x l. intros H. destruct (test x) eqn : Heq.
+  - trivial.
+  - inversion H. rewrite -> Heq in H1.
+Admitted.
+
+Lemma filter_app1 : 
+  forall (X : Type) (test : X -> bool) (x : X) (l : list X),
+  filter test (x :: l) = x :: l -> filter test l = l.
+Proof.
+  assert(H : forall (X : Type) (x : X) (l l' : list X), 
+    x :: l' = x :: l -> l' = l).
+  { intros X x l l' H'. inversion H'. reflexivity. }
+  intros X test x l H0. destruct (test x) eqn : Heqx.  
+  - inversion H0 as [H1]. rewrite -> Heqx in H1. 
+    apply H with (x := x). apply H1.
+  - inversion H0 as [H1]. rewrite -> Heqx in H1. rewrite -> H1.
+    apply filter_app0 in H0. rewrite -> Heqx in H0. inversion H0.
+Qed.
+
+Theorem iom_filter1 : 
+  forall (X : Type) (l1 l2 l : list X) (test : X -> bool), 
+  in_order_merge l1 l2 l -> filter test l1 = l1 
+                         -> filter test l2 = [] 
+                         -> filter test l = l1.
+Proof.
+  intros X l1 l2 l test H. induction H.
+  - auto.
+  - intros H0 H1. apply filter_app0 in H0 as H2. inversion H0.
+    rewrite -> H2 in H4. inversion H4. rewrite -> H2. simpl. 
+    rewrite -> H2. apply f_equal. rewrite -> H5. rewrite -> H5.
+    apply IHin_order_merge. apply H5. apply H1.
+  - intros H0 H1. inversion H1. destruct (test x) eqn : Heqx.  
+    + inversion H3.
+    + rewrite -> filter_app_test_false0. apply IHin_order_merge.
+      assumption. assumption. assumption.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced, optional (filter_challenge_2)  *)
@@ -1810,8 +1885,6 @@ Qed.
 
      forall l, l = rev l -> pal l.
 *)
-Inductive 
-
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (NoDup)  *)
