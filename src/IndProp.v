@@ -1645,10 +1645,19 @@ Qed.
     [nostutter].  (This is different from the [NoDup] property in the
     exercise above; the sequence [1;4;1] repeats but does not
     stutter.) *)
+Inductive stutter_step : forall {X : Type}, X -> list X -> Prop :=
+| ss_empty : forall {X : Type} (x : X), stutter_step x []
+| ss_step  : forall {X : Type} (x1 x2 : X) (xs : list X), x1 <> x2 -> stutter_step x1 (x2 :: xs)
+.
 
 Inductive nostutter {X:Type} : list X -> Prop :=
- (* FILL IN HERE *)
+| NSZero : nostutter []
+| NSCont : forall (x : X) (xs: list X), stutter_step x xs -> nostutter xs -> nostutter (x :: xs)
 .
+
+Example testns0 : forall (n : nat), nostutter [n].
+Proof. repeat constructor. Qed.
+
 (** Make sure each of these tests succeeds, but feel free to change
     the suggested proof (in comments) if the given one doesn't work
     for you.  Your definition might be different from ours and still
@@ -1659,35 +1668,29 @@ Inductive nostutter {X:Type} : list X -> Prop :=
     just uncomment and use them as-is, but you can also prove each
     example with more basic tactics.)  *)
 
-Example test_nostutter_1: nostutter [3;1;4;1;5;6].
-(* FILL IN HERE *) Admitted.
+Example test_nostutter_1 : nostutter [3;1;4;1;5;6].
+Proof. repeat constructor; apply beq_nat_false_iff; auto. 
+Qed.
+
+Example test_nostutter_2 : nostutter (@nil nat).
+Proof. repeat constructor. Qed.
 (* 
   Proof. repeat constructor; apply beq_nat_false_iff; auto.
   Qed.
 *)
 
-Example test_nostutter_2:  nostutter (@nil nat).
-(* FILL IN HERE *) Admitted.
-(* 
-  Proof. repeat constructor; apply beq_nat_false_iff; auto.
-  Qed.
-*)
+Example test_nostutter_3 : nostutter [5].
+Proof. repeat constructor; apply beq_nat_false; auto. Qed.
 
-Example test_nostutter_3:  nostutter [5].
-(* FILL IN HERE *) Admitted.
-(* 
-  Proof. repeat constructor; apply beq_nat_false; auto. Qed.
-*)
-
-Example test_nostutter_4:      not (nostutter [3;1;1;4]).
-(* FILL IN HERE *) Admitted.
-(* 
-  Proof. intro.
+Example test_nostutter_4 : not (nostutter [3;1;1;4]).
+Proof. 
+  intro.
+  inversion H.
   repeat match goal with
     h: nostutter _ |- _ => inversion h; clear h; subst
   end.
-  contradiction H1; auto. Qed.
-*)
+  auto.
+Abort.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (filter_challenge)  *)
