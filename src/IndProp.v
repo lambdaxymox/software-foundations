@@ -1689,7 +1689,6 @@ Proof.
   repeat match goal with
     h: nostutter _ |- _ => inversion h; clear h; subst
   end.
-  auto.
 Abort.
 (** [] *)
 
@@ -1756,8 +1755,50 @@ Abort.
 
        forall l, pal l -> l = rev l.
 *)
+Inductive pal {X : Type} : list X ->  Prop :=
+| PalZero : pal []
+| PalOne  : forall (x : X), pal [x]
+| PalMany : forall (x : X) (l : list X), pal l -> pal (x :: l ++ [x])
+.
 
-(* FILL IN HERE *)
+Theorem pal_app_rev : 
+  forall (X : Type) (l : list X), pal (l ++ rev l).
+Proof.
+  intros X l. induction l.
+  - simpl. constructor.
+  - simpl. rewrite -> app_assoc. apply PalMany. apply IHl.
+Qed.
+
+Lemma pal_rev2 : forall (X : Type) (x : X) (l : list X),
+  rev (x :: l ++ [x]) = x :: rev l ++ [x].
+Proof.
+  assert (H0 : forall {X : Type} (x : X), rev [x] = [x]).
+  { auto. }
+  assert (H1 : forall {X : Type} (x : X) (l : list X),
+    rev(l ++ [x]) = x :: rev l).
+  { intros X x l. induction l. auto. simpl. rewrite -> IHl. simpl. reflexivity. }
+  intros X x l. simpl. rewrite -> H1. simpl. reflexivity.
+Qed.
+
+Lemma pal_rev1 : forall (X : Type) (x : X) (l : list X),
+  pal l -> rev (x :: l ++ [x]) = x :: l ++ [x].
+Proof.
+  intros X x l H. generalize dependent x. induction H. 
+  - auto. 
+  - auto.
+  - intros x0. rewrite -> pal_rev2. rewrite -> IHpal.
+    reflexivity.
+Qed.
+
+Theorem pal_rev :
+  forall (X : Type) (l : list X), pal l -> l = rev l.
+Proof.
+  intros X l. induction l.
+  - auto.
+  - simpl. intros H. inversion H as [H0 | H1 | H2]. 
+    + auto. 
+    + rewrite <- rev_head_tail. symmetry. apply pal_rev1. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (palindrome_converse)  *)
@@ -1767,8 +1808,8 @@ Abort.
 
      forall l, l = rev l -> pal l.
 *)
+Inductive 
 
-(* FILL IN HERE *)
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (NoDup)  *)
