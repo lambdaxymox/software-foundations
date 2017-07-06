@@ -192,11 +192,11 @@ Qed.
 (** Next, if we update a map [m] at a key [x] with a new value [v]
     and then look up [x] in the map resulting from the [update], we
     get back [v]: *)
-
 Lemma t_update_eq : forall A (m: total_map A) x v,
   (t_update m x v) x = v.
 Proof.
-
+  intros A m x v. unfold t_update. rewrite <- beq_id_refl.
+  reflexivity.
 Qed.
 (** [] *)
 
@@ -210,7 +210,11 @@ Theorem t_update_neq : forall (X:Type) v x1 x2
   x1 <> x2 ->
   (t_update m x1 v) x2 = m x2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X v x1 x2 m H. unfold t_update. 
+  destruct (beq_id x1 x2) eqn: Heq.
+  - destruct H. apply beq_id_true_iff. apply Heq.
+  - reflexivity. 
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_shadow)  *)
@@ -224,7 +228,12 @@ Lemma t_update_shadow : forall A (m: total_map A) v1 v2 x,
     t_update (t_update m x v1) x v2
   = t_update m x v2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A m v1 v2 x. remember (t_update m x v1) as m'.
+  unfold t_update. apply functional_extensionality. intros x0.
+  destruct (beq_id x x0) eqn : Heq. 
+  - reflexivity.
+  - rewrite -> Heqm'. unfold t_update. rewrite -> Heq. reflexivity.
+Qed.
 (** [] *)
 
 (** For the final two lemmas about total maps, it's convenient to use
@@ -238,7 +247,8 @@ Proof.
 
 Lemma beq_idP : forall x y, reflect (x = y) (beq_id x y).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros x y. apply iff_reflect. symmetry. apply beq_id_true_iff.
+Qed.
 (** [] *)
 
 (** Now, given [id]s [x1] and [x2], we can use the [destruct (beq_idP
@@ -255,7 +265,12 @@ Proof.
 Theorem t_update_same : forall X x (m : total_map X),
   t_update m x (m x) = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x m. unfold t_update.
+  apply functional_extensionality. intros x0.
+  destruct (beq_id x x0) eqn : Heq.
+  - apply f_equal. apply beq_id_true_iff. apply Heq.
+  - reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, recommended (t_update_permute)  *)
@@ -269,7 +284,15 @@ Theorem t_update_permute : forall (X:Type) v1 v2 x1 x2
     (t_update (t_update m x2 v2) x1 v1)
   = (t_update (t_update m x1 v1) x2 v2).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X v1 v2 x1 x2 m H. unfold t_update.
+  apply functional_extensionality. intros x.
+  destruct (beq_id x1 x) eqn : Heq1.
+  destruct (beq_id x2 x) eqn : Heq2.
+  specialize (beq_id_true_iff x1 x). intros. destruct H0.
+  specialize (beq_id_true_iff x2 x). intros. destruct H2.
+  specialize (H0 Heq1). specialize (H2 Heq2). congruence. reflexivity.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
