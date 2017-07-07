@@ -182,7 +182,6 @@ Theorem ev_8 : ev 8.
 Proof. repeat constructor. Qed.
 
 Definition ev_8' : ev 8 := ev_SS 6 (ev_SS 4 ev_4''').
-  
 (** [] *)
 
 (* ################################################################# *)
