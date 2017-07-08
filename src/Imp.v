@@ -1806,8 +1806,18 @@ Module ShortCircuit.
     Write an alternate version of [beval] that performs short-circuit
     evaluation of [BAnd] in this manner, and prove that it is
     equivalent to [beval]. *)
+Fixpoint bevals (st : state) (b : bexp) : bool :=
+  match b with
+  | BTrue       => true
+  | BFalse      => false
+  | BEq a1 a2   => beq_nat (aeval st a1) (aeval st a2)
+  | BLe a1 a2   => leb (aeval st a1) (aeval st a2)
+  | BNot b1     => negb (bevals st b1)
+  | BAnd b1 b2  => 
+      if (bevals st b1) then true 
+      else bevals st b2
+  end.
 
-(* FILL IN HERE *)
 (** [] *)
 End ShortCircuit.
 
