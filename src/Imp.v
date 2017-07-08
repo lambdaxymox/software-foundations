@@ -1592,37 +1592,41 @@ Theorem no_whiles_terminating :
   forall (c : com) (st : state),
   no_whilesR c -> exists (st' : state), c / st \\ st'.
 Proof.
-  intros c st H. induction H.
-  - exists st. constructor.
-  - remember (t_update st x (aeval st a)) as st'. 
+  intros c st H. generalize dependent st. induction H.
+  - intros st. exists st. constructor.
+  - intros st. remember (t_update st x (aeval st a)) as st'. 
     exists st'. subst. constructor. reflexivity.
-  - admit.
-  - destruct b eqn : Heqb.
-    + inversion IHno_whilesR1 as [st1 H1]. 
+  - intros st. 
+    destruct IHno_whilesR1 with st as [st1 H1].
+    destruct IHno_whilesR2 with st1 as [st2 H2].
+    exists st2. apply E_Seq with st1. assumption. assumption.
+  - intros st. destruct b eqn : Heqb.
+    + destruct IHno_whilesR1 with st as [st1 H1].
+      (* inversion IHno_whilesR1 as [st1 H1]. *)
       exists st1. constructor. trivial. assumption.
-    + inversion IHno_whilesR2 as [st2 H2]. exists st2.
+    + destruct IHno_whilesR2 with st as [st2 H2]. exists st2.
       destruct (beval st b) eqn : Heq2.
       * rewrite -> Heqb in Heq2. simpl in Heq2. inversion Heq2.
       * apply E_IfFalse. auto. assumption.
     + destruct (beval st b) eqn : Heq2.
-      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+      * destruct IHno_whilesR1 with st as [st1 H1]. exists st1.
         apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
-      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+      * destruct IHno_whilesR2 with st as [st2 H2]. exists st2.
         apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
     + destruct (beval st b) eqn : Heq2.
-      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+      * destruct IHno_whilesR1 with st as [st1 H1]. exists st1.
         apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
-      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+      * destruct IHno_whilesR2 with st as [st2 H2]. exists st2.
         apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
     + destruct (beval st b) eqn : Heq2.
-      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+      * destruct IHno_whilesR1 with st as [st1 H1]. exists st1.
         apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
-      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+      * destruct IHno_whilesR2 with st as [st2 H2]. exists st2.
         apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
     + destruct (beval st b) eqn : Heq2.
-      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+      * destruct IHno_whilesR1 with st as [st1 H1]. exists st1.
         apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
-      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+      * destruct IHno_whilesR2 with st as [st2 H2]. exists st2.
         apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
 Qed.
 
