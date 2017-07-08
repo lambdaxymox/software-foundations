@@ -1806,17 +1806,56 @@ Module ShortCircuit.
     Write an alternate version of [beval] that performs short-circuit
     evaluation of [BAnd] in this manner, and prove that it is
     equivalent to [beval]. *)
-Fixpoint bevals (st : state) (b : bexp) : bool :=
+Fixpoint beval_s (st : state) (b : bexp) : bool :=
   match b with
   | BTrue       => true
   | BFalse      => false
   | BEq a1 a2   => beq_nat (aeval st a1) (aeval st a2)
   | BLe a1 a2   => leb (aeval st a1) (aeval st a2)
-  | BNot b1     => negb (bevals st b1)
-  | BAnd b1 b2  => 
-      if (bevals st b1) then true 
-      else bevals st b2
+  | BNot b1     => negb (beval_s st b1)
+  | BAnd b1 b2  => if negb (beval_s st b1) then false else beval_s st b2
   end.
+
+Lemma negb_inv_true : forall b : bool, 
+  negb b = true -> b = false.
+Proof. intros b H. destruct b. auto. auto. Qed.
+
+Lemma negb_inv_false : forall b : bool,
+  negb b = false -> b = true.
+Proof. intros b H. destruct b. auto . auto. Qed.
+
+Theorem beval_s_eqv_to_beval : 
+  forall (st : state) (be : bexp) (bv : bool), 
+  beval_s st be = bv <-> beval st be = bv.
+Proof.
+  intros st be bv. split.
+  - generalize dependent bv.
+    induction be; intros bv; simpl; auto.
+    + intros H. destruct bv. 
+      * apply negb_inv_false. rewrite -> negb_involutive. 
+        apply negb_inv_true in H.
+        apply IHbe. assumption.
+      * apply negb_inv_true. rewrite -> negb_involutive.
+        apply negb_inv_false in H. apply IHbe. assumption.
+    + intros H. destruct bv eqn : Hbe.
+      * apply andb_true_iff. split. 
+        destruct (beval_s st be1) eqn : Hbe1.
+        destruct (beval_s st be2) eqn : Hbe2.
+        auto. auto. auto.
+        destruct (beval_s st be1) eqn : Hbe1. auto. simpl in H. inversion H.
+      * apply andb_false_iff.
+        destruct (beval_s st be1) eqn : Hbe1.
+        auto. left. apply IHbe1. simpl in H. assumption.
+  - generalize dependent bv. 
+    induction be; intros bv; simpl; auto.
+    + intros H. destruct bv.
+      * apply negb_inv_false. rewrite -> negb_involutive.
+        apply negb_inv_true in H. 
+        apply IHbe. assumption.
+      * apply negb_inv_true. rewrite -> negb_involutive.
+        apply negb_inv_false in H. apply IHbe. assumption.
+    + 
+Qed.
 
 (** [] *)
 End ShortCircuit.
@@ -1934,10 +1973,33 @@ Reserved Notation "c1 '/' st '\\' s '/' st'"
     [ceval] relation. *)
 
 Inductive ceval : com -> state -> result -> state -> Prop :=
-  | E_Skip : forall st,
-      CSkip / st \\ SContinue / st
-  (* FILL IN HERE *)
-
+  | E_Skip st : CSkip / st \\ SContinue / st
+  | E_Break st : CBreak / st \\ SBreak / st
+  | E_Ass st a1 n x : aeval st a1 = n -> (x ::= a1) / st \\ SContinue / (t_update st x n)
+  | E_IfTrue st st' b c1 c2 s :
+      beval st b = true -> c1 / st \\ s / st' ->
+      (IFB b THEN c1 ELSE c2 FI) / st \\ s / st'
+  | E_IfFalse st st' b c1 c2 s :
+      beval st b = false -> c2 / st \\ s / st' ->
+      (IFB b THEN c1 ELSE c2 FI) / st \\ s / st'
+  | E_SeqBreak c1 c2 st st' :
+      c1 / st \\ SBreak / st' ->
+      (c1 ;; c2) / st \\ SBreak / st'
+  | E_Seq c1 c2 st st' st'' s:
+      c1 / st \\ SContinue / st' -> c2 / st' \\ s / st'' ->
+      (c1 ;; c2) / st \\ s / st''
+  | E_WhileEnd st b c:
+      beval st b = false ->
+      (WHILE b DO c END) / st \\ SContinue / st
+  | E_WhileLoopNormal st st' st'' b c s :
+      beval st b = true ->
+      c / st \\ SContinue / st' ->
+      (WHILE b DO c END) / st' \\ s / st'' ->
+      (WHILE b DO c END) / st \\ SContinue / st''
+  | E_WhileBreak st st' b c:
+      beval st b = true ->
+      c / st \\ SBreak / st' ->
+      (WHILE b DO c END) / st \\ SContinue / st'
   where "c1 '/' st '\\' s '/' st'" := (ceval c1 st s st').
 
 (** Now prove the following properties of your definition of [ceval]: *)
@@ -1946,20 +2008,24 @@ Theorem break_ignore : forall c st st' s,
      (BREAK;; c) / st \\ s / st' ->
      st = st'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros c st st' s H. inversion H. inversion H5. auto. inversion H2.
+Qed.
 
 Theorem while_continue : forall b c st st' s,
   (WHILE b DO c END) / st \\ s / st' ->
   s = SContinue.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c st st' s H. inversion H; auto.
+Qed.
 
 Theorem while_stops_on_break : forall b c st st',
   beval st b = true ->
   c / st \\ SBreak / st' ->
   (WHILE b DO c END) / st \\ SContinue / st'.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c st st' H1 H2.
+  specialize (E_WhileBreak _ _ _ _ H1 H2); auto.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, optional (while_break_true)  *)
@@ -1968,7 +2034,12 @@ Theorem while_break_true : forall b c st st',
   beval st' b = true ->
   exists st'', c / st'' \\ SBreak / st'.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros.
+  remember (WHILE b DO c END) as Hloop.
+  induction H; try (inversion HeqHloop); subst.
+  congruence. apply IHceval2. auto. auto.
+  exists st. auto.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (ceval_deterministic)  *)
@@ -1977,9 +2048,86 @@ Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
      c / st \\ s2 / st2 ->
      st1 = st2 /\ s1 = s2.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+    (* Tactics that find two contradictory statements of the shape
+     c / st || s1 / st1 and c / st || s2 / st2 and try to use determinism and
+     congruence to solve the goal. *)
+    Ltac elim_determ :=
+      match goal with
+      | H1 : forall _ _ _ _ _, _ / _ \\ _ / _ -> _ / _ \\ _ / _ -> _ = _ /\ _ = _,
+      H2 : _ / _ \\ _ / _, H3 : _ / _ \\ _ / _ |- _ =>
+    specialize H1 with (1 := H2) (2 := H3); destruct H1; congruence
+    end.
+  (* Induction on the command, we eliminate as many goals as possible by using
+     congruence after the inversion of the two eval statements, and try to eliminate
+     easy contradictions with elim_determ. *)
+  induction c; split; try solve [inversion H; inversion H0; try congruence; subst;
+  try elim_determ].
+  (* We are left with a few cases regarding sequences because you need to make a
+     deduction before you can easily finish the proof, and the case for WHILE. *)
+  - inversion H; inversion H0; try congruence; subst; try elim_determ.
+    specialize IHc1 with (1 := H3) (2 := H10). destruct IHc1; subst.
+    eapply IHc2; eauto.
+  - inversion H; inversion H0; try congruence; subst; try elim_determ.
+    specialize IHc1 with (1 := H3) (2 := H10). destruct IHc1; subst.
+    eapply IHc2; eauto.
+  - pose proof (while_continue _ _ _ _ _ H);
+    pose proof (while_continue _ _ _ _ _ H0); subst.
+    (* We need some kind of induction, because we don't know how many E_WhileLoopNormal
+       steps were taken. *)
+    remember (WHILE b DO c END) as t in *;
+    induction H; inversion Heqt; subst; inversion H0; subst; try congruence;
+    try elim_determ.
+    specialize IHc with (1 := H1) (2 := H6); destruct IHc; subst.
+      apply IHceval2; auto.
+      rewrite (while_continue _ _ _ _ _ H2).
+      rewrite <- (while_continue _ _ _ _ _ H8).
+      assumption.
+Qed.
 (** [] *)
+
+Ltac inv H := inversion H; subst; clear H.
+
+Theorem ceval_deterministic1: forall (c:com) st st1 st2 s1 s2,
+  c / st \\ s1 / st1 ->
+  c / st \\ s2 / st2 ->
+  st1 = st2 /\ s1 = s2.
+Proof.
+  induction c. intros st st1 st2 s1 s2 H1 H2.
+  inv H1; inv H2. intuition.
+  intros. inv H; inv H0. intuition.
+  intros. inv H; inv H0. intuition.
+  intros. inv H; inv  H0.
+  specialize (IHc1 _ _ _ _ _ H6 H5). assumption.
+  specialize (IHc1 _ _ _ _ _ H6 H2 ). destruct IHc1. inv  H0.
+  specialize (IHc1 _ _ _ _ _ H3 H6). destruct IHc1. inv H0.
+  specialize (IHc1 _ _ _ _ _ H3 H2). destruct IHc1. subst.
+  specialize (IHc2 _ _ _ _ _ H7 H8). auto.
+  intros. inv H; inv H0.
+  specialize (IHc1 _ _ _ _ _ H8 H9). assumption.
+  congruence. congruence.
+  specialize (IHc2 _ _ _ _ _ H8 H9). assumption.
+  intros. inv H; inv H0. auto.
+  congruence. congruence. congruence.
+  intuition. pose proof (IHc _ _ _ _ _ H4 H5).
+  destruct H; subst. clear H3; clear H0; clear H5.
+  pose proof (while_continue _ _ _ _ _ H10).
+  pose proof (while_continue _ _ _ _ _ H8); subst.
+
+  clear H2. clear H4.
+  remember (WHILE b DO c END) as t in *;
+  induction H8; inversion Heqt; subst; inversion H10; subst; try congruence;
+  try elim_determ.
+  specialize IHc with (1 := H3) (2 := H8_); destruct IHc; subst.
+  apply IHceval2; auto.
+  rewrite (while_continue _ _ _ _ _  H8_0).
+  rewrite <- (while_continue _ _ _ _ _ H5). assumption.    
+
+  specialize (IHc _ _ _ _ _ H4 H9). destruct IHc. inversion H0.
+  congruence. specialize (IHc _ _ _ _ _ H7 H4).
+  destruct IHc. inversion H0.
+  specialize (IHc _ _ _ _ _ H7 H8). firstorder.
+Qed.
+
 End BreakImp.
 
 (** **** Exercise: 4 stars, optional (add_for_loop)  *)
