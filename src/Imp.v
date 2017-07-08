@@ -1503,12 +1503,12 @@ Proof.
       is an assignment *)
 
   inversion Heval. subst. clear Heval. simpl.
-  apply t_update_eq.  Qed.
+  apply t_update_eq.
+Qed.
 
 (** **** Exercise: 3 stars, recommendedM (XtimesYinZ_spec)  *)
 (** State and prove a specification of [XtimesYinZ]. *)
 
-(* FILL IN HERE *)
 (** [] *)
 
 (** **** Exercise: 3 stars, recommended (loop_never_stops)  *)
@@ -1523,8 +1523,15 @@ Proof.
       [loopdef] terminates.  Most of the cases are immediately
       contradictory (and so can be solved in one step with
       [inversion]). *)
-
-  (* FILL IN HERE *) Admitted.
+  induction contra.
+  - inversion Heqloopdef.
+  - inversion Heqloopdef.
+  - inversion Heqloopdef.
+  - inversion Heqloopdef.
+  - inversion Heqloopdef.
+  - inversion Heqloopdef. subst. inversion H.
+  - apply IHcontra2. apply Heqloopdef.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (no_whilesR)  *)
@@ -1550,21 +1557,81 @@ Fixpoint no_whiles (c : com) : bool :=
     while loops.  Then prove its equivalence with [no_whiles]. *)
 
 Inductive no_whilesR: com -> Prop :=
- (* FILL IN HERE *)
+| R_Skip : no_whilesR SKIP
+| R_Ass  : forall (x : id) (a : aexp), no_whilesR (x ::= a)
+| R_Seq  : forall (c1 c2 : com), no_whilesR c1 -> no_whilesR c2 -> no_whilesR (c1 ;; c2)
+| R_IfThen : forall (b : bexp) (c1 c2 : com), no_whilesR c1 -> no_whilesR c2 -> no_whilesR (IFB b THEN c1 ELSE c2 FI)
 .
 
 Theorem no_whiles_eqv:
    forall c, no_whiles c = true <-> no_whilesR c.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros c. split. intros H.
+  - induction c. 
+    + constructor.
+    + constructor.
+    + inversion H. apply andb_true_iff in H1. destruct H1.
+      constructor. apply IHc1. assumption. apply IHc2. assumption.
+    + inversion H as [H0]. constructor. apply andb_true_iff in H0. 
+      destruct H0 as [H1 H2]. apply IHc1. assumption. 
+      apply IHc2. apply andb_true_iff in H0. 
+      destruct H0 as [H1 H2]. assumption.
+    + inversion H.
+  - intros H. induction c; simpl; auto.
+    + inversion H. apply andb_true_iff. split. apply IHc1. assumption. apply IHc2. assumption.
+    + inversion H. apply andb_true_iff. split. apply IHc1. assumption. apply IHc2. assumption. 
+    + inversion H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 starsM (no_whiles_terminating)  *)
 (** Imp programs that don't involve while loops always terminate.
     State and prove a theorem [no_whiles_terminating] that says this. *)
 (** Use either [no_whiles] or [no_whilesR], as you prefer. *)
+Theorem no_whiles_terminating : 
+  forall (c : com) (st : state),
+  no_whilesR c -> exists (st' : state), c / st \\ st'.
+Proof.
+  intros c st H. induction H.
+  - exists st. constructor.
+  - remember (t_update st x (aeval st a)) as st'. 
+    exists st'. subst. constructor. reflexivity.
+  - admit.
+  - destruct b eqn : Heqb.
+    + inversion IHno_whilesR1 as [st1 H1]. 
+      exists st1. constructor. trivial. assumption.
+    + inversion IHno_whilesR2 as [st2 H2]. exists st2.
+      destruct (beval st b) eqn : Heq2.
+      * rewrite -> Heqb in Heq2. simpl in Heq2. inversion Heq2.
+      * apply E_IfFalse. auto. assumption.
+    + destruct (beval st b) eqn : Heq2.
+      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+        apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
+      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+        apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
+    + destruct (beval st b) eqn : Heq2.
+      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+        apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
+      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+        apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
+    + destruct (beval st b) eqn : Heq2.
+      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+        apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
+      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+        apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
+    + destruct (beval st b) eqn : Heq2.
+      * inversion IHno_whilesR1 as [st1 H1]. exists st1.
+        apply E_IfTrue. rewrite <- Heqb. assumption. assumption.
+      * inversion IHno_whilesR2 as [st2 H2]. exists st2.
+        apply E_IfFalse. rewrite <- Heqb. assumption. assumption.
+Qed.
 
-(* FILL IN HERE *)
+Theorem no_whiles_terminating' : forall (c : com) (st: state), 
+  no_whiles c = true -> exists st', c / st \\ st'.
+Proof.
+  intros c st H. apply no_whiles_eqv in H. 
+  apply no_whiles_terminating. assumption.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
