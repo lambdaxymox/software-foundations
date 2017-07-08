@@ -1832,7 +1832,7 @@ Proof.
   - generalize dependent bv.
     induction be; intros bv; simpl; auto.
     + intros H. destruct bv. 
-      * apply negb_inv_false. rewrite -> negb_involutive. 
+      * apply negb_inv_false. rewrite -> negb_involutive.
         apply negb_inv_true in H.
         apply IHbe. assumption.
       * apply negb_inv_true. rewrite -> negb_involutive.
@@ -1854,7 +1854,18 @@ Proof.
         apply IHbe. assumption.
       * apply negb_inv_true. rewrite -> negb_involutive.
         apply negb_inv_false in H. apply IHbe. assumption.
-    + 
+    + intros H. destruct bv eqn : Hbv. 
+      * apply andb_true_iff in H. inversion H. 
+        destruct (beval_s st be1) eqn: Heq1.
+        auto. simpl. apply IHbe1. assumption.
+      * destruct (beval st be1) eqn: Heq1.
+        destruct (beval st be2) eqn : Heq2.
+        inversion H.
+        destruct (beval_s st be1) eqn : Heq3. 
+        auto. auto.
+        destruct (beval_s st be1) eqn : Heq4. simpl.
+        destruct (beval_s st be2) eqn : Heq5. simpl. 
+        auto. auto. auto.
 Qed.
 
 (** [] *)
