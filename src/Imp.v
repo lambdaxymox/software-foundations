@@ -1601,9 +1601,8 @@ Proof.
     destruct IHno_whilesR2 with st1 as [st2 H2].
     exists st2. apply E_Seq with st1. assumption. assumption.
   - intros st. destruct b eqn : Heqb.
-    + destruct IHno_whilesR1 with st as [st1 H1].
-      (* inversion IHno_whilesR1 as [st1 H1]. *)
-      exists st1. constructor. trivial. assumption.
+    + destruct IHno_whilesR1 with st as [st1 H1]. exists st1.
+      constructor. trivial. assumption.
     + destruct IHno_whilesR2 with st as [st2 H2]. exists st2.
       destruct (beval st b) eqn : Heq2.
       * rewrite -> Heqb in Heq2. simpl in Heq2. inversion Heq2.
