@@ -1636,7 +1636,7 @@ Proof.
   apply no_whiles_terminating. assumption.
 Qed.
 (** [] *)
-
+Module Stack.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
@@ -1697,30 +1697,57 @@ Inductive sinstr : Type :=
     stack contains less than two elements.  In a sense, it is
     immaterial what we do, since our compiler will never emit such a
     malformed program. *)
+Definition s_eval (st : state) 
+                  (stack : list nat) 
+                  (inst : sinstr) : list nat :=
+  match inst with
+  | SPush x => x :: stack
+  | SLoad id => st id :: stack
+  | SPlus =>
+    match stack with
+    | f :: s :: rest => s + f :: rest
+    | _ => []
+    end
+  | SMinus =>
+    match stack with
+    | f :: s :: rest => s - f :: rest
+    | _ => []
+    end
+  | SMult =>
+    match stack with
+    | f :: s :: rest => s * f :: rest
+    | _ => []
+    end
+  end.
 
-Fixpoint s_execute (st : state) (stack : list nat)
-                   (prog : list sinstr)
-                 : list nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint s_execute (st : state) 
+                   (stack : list nat) 
+                   (prog : list sinstr) : list nat :=
+  match prog with
+  | nil    => stack
+  | h :: t => s_execute st (s_eval st stack h) t
+  end.
 
-Example s_execute1 :
-     s_execute empty_state []
-       [SPush 5; SPush 3; SPush 1; SMinus]
-   = [2; 5].
-(* FILL IN HERE *) Admitted.
+Example s_execute1 : 
+  s_execute empty_state [] [SPush 5; SPush 3; SPush 1; SMinus] = [2; 5].
+Proof. simpl. reflexivity. Qed.
 
 Example s_execute2 :
-     s_execute (t_update empty_state X 3) [3;4]
-       [SPush 4; SLoad X; SMult; SPlus]
-   = [15; 4].
-(* FILL IN HERE *) Admitted.
+  s_execute (t_update empty_state X 3) [3;4] [SPush 4; SLoad X; SMult; SPlus] = [15; 4].
+Proof. simpl. reflexivity. Qed.
 
 (** Next, write a function that compiles an [aexp] into a stack
     machine program. The effect of running the program should be the
     same as pushing the value of the expression on the stack. *)
 
-Fixpoint s_compile (e : aexp) : list sinstr
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint s_compile (e : aexp) : list sinstr :=
+  match e with
+  | ANum n       => [SPush n]
+  | AId id       => [SLoad id]
+  | APlus e1 e2  => s_compile e1 ++ s_compile e2 ++ [SPlus]
+  | AMinus e1 e2 => s_compile e1 ++ s_compile e2 ++ [SMinus]
+  | AMult e1 e2  => s_compile e1 ++ s_compile e2 ++ [SMult]
+  end.
 
 (** After you've defined [s_compile], prove the following to test
     that it works. *)
@@ -1728,7 +1755,7 @@ Fixpoint s_compile (e : aexp) : list sinstr
 Example s_compile1 :
     s_compile (AMinus (AId X) (AMult (ANum 2) (AId Y)))
   = [SLoad X; SPush 2; SLoad Y; SMult; SMinus].
-(* FILL IN HERE *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (stack_compiler_correct)  *)
@@ -1744,12 +1771,30 @@ Example s_compile1 :
     theorem will then be a simple corollary of this lemma. *)
 
 
-Theorem s_compile_correct : forall (st : state) (e : aexp),
-  s_execute st [] (s_compile e) = [ aeval st e ].
+Theorem s_concat_program :
+  forall (st : state) (prog1 prog2 : list sinstr) (l : list nat),
+    s_execute st l (prog1 ++ prog2) = s_execute st (s_execute st l prog1)  prog2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros st. induction prog1.
+  auto.
+  simpl. intros.
+  destruct (s_eval st l a); apply IHprog1.
+Qed.
+
+Theorem s_compile_correct : forall (st : state) (e : aexp) (l : list nat),
+  s_execute st l (s_compile e) = [ aeval st e ] ++ l.
+Proof.
+  intros st. induction e;
+  auto; simpl;
+  intros l;
+  try (repeat (rewrite s_concat_program));
+  rewrite IHe1, IHe2; auto.
+Qed.
 (** [] *)
 
+End Stack.
+
+Module ShortCircuit.
 (** **** Exercise: 3 stars, optional (short_circuit)  *)
 (** Most modern programming languages use a "short-circuit" evaluation
     rule for boolean [and]: to evaluate [BAnd b1 b2], first evaluate
@@ -1764,6 +1809,7 @@ Proof.
 
 (* FILL IN HERE *)
 (** [] *)
+End ShortCircuit.
 
 Module BreakImp.
 (** **** Exercise: 4 stars, advanced (break_imp)  *)
