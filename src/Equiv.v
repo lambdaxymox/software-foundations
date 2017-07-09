@@ -1157,8 +1157,13 @@ Proof.
     + (* b always false *)
       apply trans_cequiv with c2; try assumption.
       apply IFB_false; assumption.
-  - (* WHILE *)
-    (* FILL IN HERE *) Admitted.
+  - assert (bequiv b (fold_constants_bexp b)).
+      { apply fold_constants_bexp_sound. }
+    remember (fold_constants_bexp b) as b'.
+    destruct b'; try (apply CWhile_congruence; assumption).
+    + apply WHILE_true. assumption.
+    + apply WHILE_false. assumption.
+Qed.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
@@ -1380,7 +1385,12 @@ Proof.
 Theorem inequiv_exercise:
   ~ cequiv (WHILE BTrue DO SKIP END) SKIP.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros contra.
+  apply loop_never_stops with empty_state empty_state.
+  unfold loop.
+  apply contra.
+  apply E_Skip.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
