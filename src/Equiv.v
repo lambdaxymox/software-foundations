@@ -1388,16 +1388,57 @@ Qed.
 
 (** Using [var_not_used_in_aexp], formalize and prove a correct verson
     of [subst_equiv_property]. *)
-Theorem subst_equiv_property_var_not_used : 
-  forall (i1 i2 : id) (a1 a2 : aexp),
-  var_not_used_in_aexp i1 a1 -> subst_equiv_property.
+Lemma subst_equiv_lemma1 : 
+  forall (a1 a2 : aexp) (i : id) (st : state),
+  st i = aeval st a1 -> 
+  var_not_used_in_aexp i a1 -> 
+  aeval st (subst_aexp i a1 a2) = aeval st a2.
 Proof.
-  intros i1 i2 a1 a2 H.
-  unfold subst_equiv_property.
-  unfold cequiv; split; simpl; subst.
-  -   
+  intros a1 a2. generalize dependent a1. 
+  induction a2; intros; simpl; auto.
+  (* Every case follows trivially from the induction hypotheses except 
+     case AId. *)
+  - destruct (beq_id i0 i) eqn : Heq.
+    assert (Heq' : i = i0). { symmetry. rewrite <- beq_id_true_iff. assumption. }
+    rewrite -> Heq'. auto. auto.
 Qed.
-(* FILL IN HERE *)
+
+Lemma subst_equiv_lemma2 : 
+  forall (i : id) (a : aexp) (st st' : state),
+  var_not_used_in_aexp i a ->
+  (i ::= a) / st \\ st' -> st' i = aeval st' a.
+Proof.
+  intros i a st st' H' H.
+  inversion H; subst.
+  remember (aeval st a) as a'.
+  (* remember (t_update st i a') as st'. *)
+  rewrite -> aeval_weakening. unfold t_update. rewrite <- beq_id_refl.
+  assumption. assumption.
+Qed.
+
+Theorem subst_equiv_property' : 
+  forall (i1 i2 : id) (a1 a2 : aexp),
+  var_not_used_in_aexp i1 a1 ->
+  cequiv (i1 ::= a1;; i2 ::= a2)
+         (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
+Proof.
+  intros i1 i2 a1 a2 H. split. 
+  - intros H0. inversion H0; subst. inversion H3; subst.
+    inversion H6; subst.
+    remember (aeval st a1) as a1'.
+    remember (t_update st i1 a1') as st1'.
+    apply E_Seq with st1'. assumption. apply E_Ass. apply subst_equiv_lemma1.
+    apply subst_equiv_lemma2 with st. 
+    assumption. assumption. assumption.
+  - intros H0. inversion H0; subst. inversion H3; subst.
+    inversion H6; subst.
+    remember (aeval st a1) as a1'.
+    remember (t_update st i1 a1') as st1'.
+    apply E_Seq with st1'. assumption.
+    apply E_Ass. symmetry. apply subst_equiv_lemma1.
+    apply subst_equiv_lemma2 with st. 
+    assumption. assumption. assumption.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars (inequiv_exercise)  *)
