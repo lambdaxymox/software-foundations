@@ -1371,11 +1371,32 @@ Lemma aeval_weakening : forall i st a ni,
   var_not_used_in_aexp i a ->
   aeval (t_update st i ni) a = aeval st a.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros i st a ni. intros H.
+  induction H; simpl; subst.
+  - reflexivity.
+  - apply t_update_neq. assumption.
+  - rewrite -> IHvar_not_used_in_aexp1. 
+    rewrite -> IHvar_not_used_in_aexp2.
+    reflexivity.
+  - rewrite -> IHvar_not_used_in_aexp1. 
+    rewrite -> IHvar_not_used_in_aexp2.
+    reflexivity.
+  - rewrite -> IHvar_not_used_in_aexp1. 
+    rewrite -> IHvar_not_used_in_aexp2.
+    reflexivity.
+Qed.
 
 (** Using [var_not_used_in_aexp], formalize and prove a correct verson
     of [subst_equiv_property]. *)
-
+Theorem subst_equiv_property_var_not_used : 
+  forall (i1 i2 : id) (a1 a2 : aexp),
+  var_not_used_in_aexp i1 a1 -> subst_equiv_property.
+Proof.
+  intros i1 i2 a1 a2 H.
+  unfold subst_equiv_property.
+  unfold cequiv; split; simpl; subst.
+  -   
+Qed.
 (* FILL IN HERE *)
 (** [] *)
 
