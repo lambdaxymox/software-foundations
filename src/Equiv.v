@@ -1209,7 +1209,99 @@ Qed.
    - Prove that the optimizer is sound.  (This part should be _very_
      easy.)  *)
 
-(* FILL IN HERE *)
+Fixpoint optimize_0plus_aexp (e:aexp) : aexp :=
+  match e with
+  | ANum n =>
+      ANum n
+  | AId X =>
+      AId X
+  | APlus (ANum 0) e2 =>
+      optimize_0plus_aexp e2
+  | APlus e1 e2 =>
+      APlus (optimize_0plus_aexp e1) (optimize_0plus_aexp e2)
+  | AMinus e1 e2 =>
+      AMinus (optimize_0plus_aexp e1) (optimize_0plus_aexp e2)
+  | AMult e1 e2 =>
+      AMult (optimize_0plus_aexp e1) (optimize_0plus_aexp e2)
+  end.
+
+Fixpoint optimize_0plus_bexp (b : bexp) : bexp :=
+  match b with
+  | BTrue => 
+      BTrue
+  | BFalse => 
+      BFalse
+  | BEq a1 a2 => 
+      BEq (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+  | BLe a1 a2 => 
+      BLe (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+  | BNot b1 => 
+      BNot (optimize_0plus_bexp b1)
+  | BAnd b1 b2 => 
+      BAnd (optimize_0plus_bexp b1) (optimize_0plus_bexp b2)
+  end.
+
+Fixpoint optimize_0plus_com (e : com) : com :=
+  match e with
+  | SKIP => 
+      SKIP
+  | i ::= a => 
+      i ::= optimize_0plus_aexp a
+  | c1;; c2 => 
+      optimize_0plus_com c1;; optimize_0plus_com c2
+  | IFB b THEN c1 ELSE c2 FI =>
+      IFB (optimize_0plus_bexp b) THEN (optimize_0plus_com c1)
+      ELSE (optimize_0plus_com c2) FI
+  | WHILE b DO c0 END =>
+      WHILE (optimize_0plus_bexp b) DO (optimize_0plus_com c0) END
+end.
+
+Lemma CSkip_congruence : cequiv SKIP SKIP.
+Proof. apply refl_cequiv. Qed.
+
+Theorem optimize_0plus_aexp_sound : atrans_sound optimize_0plus_aexp.
+Proof.
+  unfold atrans_sound. unfold aequiv.
+  intros a. induction a; subst; simpl; auto.
+  intros st. 
+  destruct a1;
+  try destruct n; try rewrite IHa1; try rewrite IHa2; auto.
+Qed.
+
+Theorem optimize_0plus_bexp_sound : btrans_sound optimize_0plus_bexp.
+Proof.
+  assert (Ha : forall (a : aexp), aequiv a (optimize_0plus_aexp a)).
+    { apply optimize_0plus_aexp_sound. }
+  unfold btrans_sound. unfold bequiv. 
+  intros b st. 
+  induction b; subst; simpl;
+  try rewrite <- Ha; try rewrite <- Ha; try reflexivity.
+  - rewrite <- IHb. reflexivity.
+  - rewrite <- IHb1. rewrite <- IHb2. reflexivity.
+Qed.
+
+Theorem optimize_0plus_com_sound : ctrans_sound optimize_0plus_com.
+Proof.
+  unfold ctrans_sound. intros c.
+  induction c; simpl.
+  - apply CSkip_congruence.
+  - apply CAss_congruence. apply optimize_0plus_aexp_sound.
+  - apply CSeq_congruence. assumption. assumption.
+  - apply CIf_congruence. apply optimize_0plus_bexp_sound. assumption. assumption.
+  - apply CWhile_congruence. apply optimize_0plus_bexp_sound. assumption.
+Qed.
+
+Definition fold_constants_then_optimize_0plus (c : com) : com := 
+  optimize_0plus_com (fold_constants_com c).
+
+Theorem fold_constants_then_optimize_0plus_sound : 
+  ctrans_sound fold_constants_then_optimize_0plus.
+Proof.
+  unfold ctrans_sound. unfold fold_constants_then_optimize_0plus.
+  intros c. apply trans_cequiv with (fold_constants_com c).
+  apply fold_constants_com_sound.
+  apply optimize_0plus_com_sound.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
