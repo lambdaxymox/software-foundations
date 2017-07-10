@@ -1955,7 +1955,82 @@ End Himp.
          c2
        END
 *)
-(* FILL IN HERE *)
+Module ForImp.
+
+Inductive com : Type :=
+  | CSkip  : com
+  | CAss   : id -> aexp -> com
+  | CSeq   : com -> com -> com
+  | CIf    : bexp -> com -> com -> com
+  | CWhile : bexp -> com -> com
+  | CFor   : com -> bexp -> com -> com -> com.
+
+Notation "'SKIP'" :=
+  CSkip.
+Notation "x '::=' a" :=
+  (CAss x a) (at level 60).
+Notation "c1 ;; c2" :=
+  (CSeq c1 c2) (at level 80, right associativity).
+Notation "'WHILE' b 'DO' c 'END'" :=
+  (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
+  (CIf c1 c2 c3) (at level 80, right associativity).
+Notation "'FOR' a ; b ; c 'DO' d " :=
+  (CFor a b c d) (at level 80, right associativity).
+
+Reserved Notation "c1 '/' st '\\' st'" (at level 40, st at level 39).
+
+Inductive ceval : com -> state -> state -> Prop :=
+| E_Skip : 
+    forall st, SKIP / st \\ st
+| E_Ass  : 
+    forall st a1 n x,
+      aeval st a1 = n -> 
+      (x ::= a1) / st \\ (t_update st x n)
+| E_Seq : 
+    forall c1 c2 st st' st'',
+      c1 / st \\ st' ->
+      c2 / st' \\ st'' ->
+      (c1 ;; c2) / st \\ st''
+| E_IfTrue : 
+    forall st st' b c1 c2,
+      beval st b = true ->
+      c1 / st \\ st' ->
+      (IFB b THEN c1 ELSE c2 FI) / st \\ st'
+| E_IfFalse : 
+    forall st st' b c1 c2,
+      beval st b = false ->
+      c2 / st \\ st' ->
+      (IFB b THEN c1 ELSE c2 FI) / st \\ st'
+| E_WhileEnd : 
+    forall b st c,
+      beval st b = false ->
+      (WHILE b DO c END) / st \\ st
+| E_WhileLoop : 
+    forall st st' st'' b c,
+      beval st b = true ->
+      c / st \\ st' ->
+      (WHILE b DO c END) / st' \\ st'' ->
+      (WHILE b DO c END) / st \\ st''
+| E_For: 
+    forall a b c d st st',
+      (a ;; WHILE b DO d;; c END) / st \\ st' ->
+      (FOR a ; b ; c DO d) / st \\ st'
+  where "c1 '/' st '\\' st'" := (ceval c1 st st').
+
+Definition cequiv_for (c1 c2 : com) :=
+  forall (st st' : state), (c1 / st \\ st') <-> (c2 / st \\ st').
+
+Theorem for_while_equiv : forall c1 c2 c3 b,
+  cequiv_for (FOR c1 ; b ; c2 DO c3) (c1 ;; WHILE b DO c3 ;; c2 END).
+Proof.
+  split; intros H. 
+  - inversion H. subst. assumption.
+  - apply E_For. assumption.
+Qed.
+
+End ForImp.
+
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (swap_noninterfering_assignments)  *)

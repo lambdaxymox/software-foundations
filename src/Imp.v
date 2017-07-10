@@ -2155,7 +2155,70 @@ End BreakImp.
     about making up a concrete Notation for [for] loops, but feel free
     to play with this too if you like.) *)
 
-(* FILL IN HERE *)
+Module ForImp.
+
+Inductive com : Type :=
+  | CSkip  : com
+  | CAss   : id -> aexp -> com
+  | CSeq   : com -> com -> com
+  | CIf    : bexp -> com -> com -> com
+  | CWhile : bexp -> com -> com
+  | CFor   : com -> bexp -> com -> com -> com.
+
+Notation "'SKIP'" :=
+  CSkip.
+Notation "x '::=' a" :=
+  (CAss x a) (at level 60).
+Notation "c1 ;; c2" :=
+  (CSeq c1 c2) (at level 80, right associativity).
+Notation "'WHILE' b 'DO' c 'END'" :=
+  (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
+  (CIf c1 c2 c3) (at level 80, right associativity).
+Notation "'FOR' a ; b ; c 'DO' d " :=
+  (CFor a b c d) (at level 80, right associativity).
+
+Reserved Notation "c1 '/' st '\\' st'" (at level 40, st at level 39).
+
+Inductive ceval : com -> state -> state -> Prop :=
+| E_Skip : 
+    forall st, SKIP / st \\ st
+| E_Ass  : 
+    forall st a1 n x,
+      aeval st a1 = n -> 
+      (x ::= a1) / st \\ (update st x n)
+| E_Seq : 
+    forall c1 c2 st st' st'',
+      c1 / st \\ st' ->
+      c2 / st' \\ st'' ->
+      (c1 ;; c2) / st \\ st''
+| E_IfTrue : 
+    forall st st' b c1 c2,
+      beval st b = true ->
+      c1 / st \\ st' ->
+      (IFB b THEN c1 ELSE c2 FI) / st \\ st'
+| E_IfFalse : 
+    forall st st' b c1 c2,
+      beval st b = false ->
+      c2 / st \\ st' ->
+      (IFB b THEN c1 ELSE c2 FI) / st \\ st'
+| E_WhileEnd : 
+    forall b st c,
+      beval st b = false ->
+      (WHILE b DO c END) / st \\ st
+| E_WhileLoop : 
+    forall st st' st'' b c,
+      beval st b = true ->
+      c / st \\ st' ->
+      (WHILE b DO c END) / st' \\ st'' ->
+      (WHILE b DO c END) / st \\ st''
+| E_For: 
+    forall a b c d st st',
+      (a ;; WHILE b DO d;; c END) / st \\ st' ->
+      (FOR a ; b ; c DO d) / st \\ st'
+  where "c1 '/' st '\\' st'" := (ceval c1 st st').
+
+End ForImp.
 (** [] *)
 
 (* $Date: 2016-12-20 10:33:44 -0500 (Tue, 20 Dec 2016) $ *)
