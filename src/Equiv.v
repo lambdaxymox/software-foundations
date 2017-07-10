@@ -2099,11 +2099,14 @@ Definition capprox (c1 c2 : com) : Prop := forall (st st' : state),
 (** Find two programs [c3] and [c4] such that neither approximates
     the other. *)
 
-Definition c3 : com (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-Definition c4 : com (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition c3 : com := SKIP.
+
+Definition c4 : com := (WHILE BTrue DO SKIP END).
 
 Theorem c3_c4_different : ~ capprox c3 c4 /\ ~ capprox c4 c3.
-Proof. (* FILL IN HERE *) Admitted.
+Proof.
+  
+Qed.
 
 (** Find a program [cmin] that approximates every other program. *)
 
