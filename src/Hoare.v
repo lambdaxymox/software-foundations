@@ -1214,7 +1214,13 @@ Inductive ceval : com -> state -> state -> Prop :=
                   c1 / st \\ st' ->
                   (WHILE b1 DO c1 END) / st' \\ st'' ->
                   (WHILE b1 DO c1 END) / st \\ st''
-(* FILL IN HERE *)
+  | E_If1True : forall st st' b c,
+                beval st b = true ->
+                c / st \\ st' ->
+                (IF1 b THEN c FI) / st \\ st'
+  | E_If1False : forall st b c,
+                 beval st b = false ->
+                 (IF1 b THEN c FI) / st \\ st
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
@@ -1235,8 +1241,19 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
     for one-sided conditionals. Try to come up with a rule that is
     both sound and as precise as possible. *)
 
-(* FILL IN HERE *)
-
+Theorem hoare_if1 : 
+  forall (P Q : Assertion) (b : bexp) (c : com),
+  {{ fun st => P st /\ bassn b st }} c {{ Q }} ->
+  {{ fun st => P st /\ ~ (bassn b st) }} SKIP {{ Q }} ->
+  {{ P }} (IF1 b THEN c FI) {{ Q }}.
+Proof.
+  intros P Q b c H0 H1. unfold hoare_triple.
+  intros st st' Hbc. inversion Hbc; subst. 
+  - intros HPst. apply (H0 st st'). assumption.
+    split. assumption. unfold bassn. assumption.
+  - intros HPst'. apply (H1 st' st'). apply E_Skip.
+    split. assumption. apply bexp_eval_false. assumption.
+Qed.
 (** For full credit, prove formally [hoare_if1_good] that your rule is
     precise enough to show the following valid Hoare triple:
 
@@ -1257,7 +1274,18 @@ Lemma hoare_if1_good :
     X ::= APlus (AId X) (AId Y)
   FI
   {{ fun st => st X = st Z }}.
-Proof. (* FILL IN HERE *) Admitted.
+Proof.
+  eapply hoare_if1.
+  - intros st st' H H'. inversion H; subst; simpl. 
+    rewrite -> t_update_eq. rewrite -> t_update_neq.
+    destruct H'. assumption. unfold not. 
+    intros HXZ. inversion HXZ.
+  - intros st st' H H'. inversion H; subst. destruct H'.
+    unfold bassn in H1. simpl in H1. 
+    destruct (beq_nat (st' Y) 0) eqn : HeqY. 
+    + simpl in H1. apply beq_nat_true in HeqY. omega.
+    + destruct H1. simpl. reflexivity.
+Qed.
 
 End If1.
 (** [] *)
@@ -1337,7 +1365,7 @@ Proof.
   (* Like we've seen before, we need to reason by induction
      on [He], because, in the "keep looping" case, its hypotheses
      talk about the whole loop instead of just [c]. *)
-  remember (WHILE b DO c END) as wcom eqn:Heqwcom.
+  remember (WHILE b DO c END) as wcom eqn : Heqwcom.
   induction He;
     try (inversion Heqwcom); subst; clear Heqwcom.
   - (* E_WhileEnd *)
@@ -1482,7 +1510,10 @@ Inductive ceval : state -> com -> state -> Prop :=
       ceval st c1 st' ->
       ceval st' (WHILE b1 DO c1 END) st'' ->
       ceval st (WHILE b1 DO c1 END) st''
-(* FILL IN HERE *)
+  | E_Repeat : forall st st' st'' b c,
+      ceval st c st' ->
+      ceval st' (WHILE (BNot b) DO c END) st'' ->
+      ceval st (REPEAT c UNTIL b END) st''
 .
 
 (** A couple of definitions from above, copied here so they use the
@@ -1510,15 +1541,48 @@ Definition ex1_repeat :=
 Theorem ex1_repeat_works :
   ex1_repeat / empty_state \\
                t_update (t_update empty_state X 1) Y 1.
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. 
+  eapply E_Repeat.
+  eapply E_Seq. constructor. reflexivity.
+  constructor. reflexivity.
+  apply E_WhileEnd. reflexivity.
+Qed.
 
 (** Now state and prove a theorem, [hoare_repeat], that expresses an
     appropriate proof rule for [repeat] commands.  Use [hoare_while]
     as a model, and try to make your rule as precise as possible. *)
+Theorem hoare_repeat : forall (P : Assertion) (b : bexp) (c : com),
+  {{ fun st => P st /\ ~ (bassn b st)}} c {{ P }} ->
+  {{ P }} (WHILE (BNot b) DO c END) {{ fun st =>  P st /\ bassn b st }} ->
+  {{ P }} (REPEAT c UNTIL b END) {{ fun st => P st /\ bassn b st }}.
+Proof.
+  intros P b c HhoarePQ HhoareQR.
+  intros st st' Hr Hp.
+  remember (REPEAT c UNTIL b END) as rcom eqn : Heqrcom.
+  inversion Hr; subst.
+  - inversion H0.
+  - inversion H1.
+  - inversion H2.
+  - inversion H2.
+  - inversion H2.
+  - inversion H1.
+  - inversion H3.
+  - apply (HhoareQR st'0 st'). inversion H2. subst. assumption. 
+    apply (HhoarePQ st st'0). inversion H2. subst. assumption.
+    inversion H0; subst.
+Abort.
 
-(* FILL IN HERE *)
-
+Theorem hoare_repeat' : forall (P Q R : Assertion) (b : bexp) (c : com),
+  {{ P }} c {{ Q }} ->
+  {{ Q }} WHILE BNot b DO c END {{ R }} ->
+  {{ P }} REPEAT c UNTIL b END {{ R }}.
+Proof.
+  intros P Q R b c HhoarePQ HhoareQR.
+  intros st st' H1 H2.
+  inversion H1; subst.
+  apply (HhoareQR st'0 st'). assumption.
+  apply (HhoarePQ st st'0). assumption. assumption.
+Qed.
 (** For full credit, make sure (informally) that your rule can be used
     to prove the following valid Hoare triple:
 
@@ -1641,13 +1705,16 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
 (** Complete the Hoare rule for [HAVOC] commands below by defining
     [havoc_pre] and prove that the resulting rule is correct. *)
 
-Definition havoc_pre (X : id) (Q : Assertion) : Assertion 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition havoc_pre (X : id) (Q : Assertion) : Assertion :=
+  fun st => forall n, Q (t_update st X n).
 
 Theorem hoare_havoc : forall (Q : Assertion) (X : id),
   {{ havoc_pre X Q }} HAVOC X {{ Q }}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold hoare_triple. intros Q X st st' H Hhav. 
+  inversion H; subst. unfold havoc_pre in Hhav.
+  apply Hhav.
+Qed.
 
 End Himp.
 (** [] *)
