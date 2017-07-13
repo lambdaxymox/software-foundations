@@ -1933,7 +1933,11 @@ Lemma in_split : forall (X:Type) (x:X) (l:list X),
   In x l ->
   exists l1 l2, l = l1 ++ x :: l2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x l H.
+  assert (H0 : exists l1 l2, InSplit l l1 x l2).
+  { apply in_implies_in_split. assumption. }
+  inversion H0. inversion H1. exists x1. exists x0.
+Abort.
 
 (** Now define a property [repeats] such that [repeats X l] asserts
     that [l] contains at least one repeated element (of type [X]).  *)
