@@ -2105,8 +2105,7 @@ Definition c4 : com := (WHILE BTrue DO SKIP END).
 
 Theorem c3_c4_different : ~ capprox c3 c4 /\ ~ capprox c4 c3.
 Proof.
-  
-Qed.
+Admitted.
 
 (** Find a program [cmin] that approximates every other program. *)
 

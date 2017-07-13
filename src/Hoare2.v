@@ -2060,12 +2060,26 @@ Qed.
     incrementing [Y] at each step.  Write a formal version of this
     decorated program and prove it correct. *)
 
-Example slow_assignment_dec (m:nat) : decorated
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Example slow_assignment_dec (m:nat) : decorated := (
+      {{ fun st => st X = m }}
+    Y ::= ANum 0
+      {{ fun st => st X = m /\ st Y = 0 }} ->>
+      {{ fun st => st X + st Y = m }};;
+    WHILE BNot (BEq (AId X) (ANum 0)) DO
+        {{ fun st => st X + st Y = m /\ st X <> 0 }} ->>
+        {{ fun st => (st X - 1) + (st Y + 1) = m }}
+      X ::= AMinus (AId X) (ANum 1)
+        {{ fun st => st X + (st Y + 1) = m }} ;;
+      Y ::= APlus (AId Y) (ANum 1)
+        {{ fun st => st X + st Y = m }}
+    END
+      {{ fun st => st X + st Y = m /\ st X = 0 }} ->>
+      {{ fun st => st Y = m }}
+) % dcom.
 
 Theorem slow_assignment_dec_correct : forall m,
   dec_correct (slow_assignment_dec m).
-Proof. (* FILL IN HERE *) Admitted.
+Proof. intros. verify. Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advancedM (factorial_dec)   *)
@@ -2081,7 +2095,32 @@ Fixpoint real_fact (n:nat) : nat :=
     program [factorial_dec] that implements the factorial function and
     prove it correct as [factorial_dec_correct]. *)
 
-(* FILL IN HERE *)
+Example factorial_dec (m:nat) : dcom := (
+    {{ fun st => st X = m }}
+  Y ::= ANum 1
+    {{ fun st => st X = m /\ st Y = 1 }} ->>
+    {{ fun st => st Y * fact (st X) = fact m }};;
+  WHILE BNot (BEq (AId X) (ANum 0)) DO
+    {{ fun st => st Y * fact (st X) = fact m /\ st X <> 0 }} ->>
+    {{ fun st => st Y * fact (st X) = fact m /\ fact (st X) = st X * fact (st X - 1) }} ->>
+    {{ fun st => st Y * st X * fact (st X - 1 ) = fact m }}
+  Y ::= AMult (AId Y) (AId X)
+    {{ fun st => st Y * fact (st X - 1) = fact m }};;
+  X ::= AMinus (AId X) (ANum 1)
+    {{ fun st => st Y * fact (st X) = fact m }}
+  END
+    {{ fun st => st Y * fact (st X) = fact m /\ st X = 0 }} ->>
+    {{ fun st => st Y * fact (st X) = fact m /\ fact (st X) = 1 }} ->>
+    {{ fun st => st Y = fact m }}
+) % dcom.
+
+Theorem factorial_dec_correct : forall m,
+  dec_correct (factorial_dec m).
+Proof.
+  intros. verify. destruct (st X) eqn:eqX; simpl. omega.
+  rewrite <- minus_n_O. reflexivity. rewrite <- mult_assoc.
+  rewrite <- H0. assumption. rewrite H0 in H. omega.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (fib_eqn)  *)
