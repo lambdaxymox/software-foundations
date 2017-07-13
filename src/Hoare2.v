@@ -887,18 +887,19 @@ Qed.
     Fill in the blanks in following decorated program:
 
     {{ X = m }} ->>
-    {{                                      }}
+    {{ 1 * X! = m! }}
   Y ::= 1;;
-    {{                                      }}
+    {{ Y * X! = m! }}
   WHILE X <> 0
-  DO   {{                                      }} ->>
-       {{                                      }}
+  DO   {{ Y * X! = m! /\ X <> 0 }} ->>
+       {{ Y * X * (X - 1)! = m! }}
      Y ::= Y * X;;
        {{                                      }}
      X ::= X - 1
-       {{                                      }}
+       {{ Y * X! = m! }}
   END
-    {{                                      }} ->>
+    {{ Y*X! = m! /\ ~(X <> 0) }} ->>
+    {{ Y * X! = m! /\ X = 0 }} ->>
     {{ Y = m! }}
 *)
 
@@ -920,24 +921,29 @@ Qed.
   plus standard high-school algebra, as always.
 
   {{ True }} ->>
-  {{                    }}
+  {{  0 = min a b - min a b /\ a = a }}
   X ::= a;;
-  {{                       }}
+  {{ 0 = min a b - min a b /\ X = a }} ->>
+  {{ 0 = min a b - min X b }} ->>
+  {{ 0 = min a b - min X b /\ b = b }} ->>
   Y ::= b;;
-  {{                       }}
+  {{ 0 = min a b - min X b /\ Y = b }} ->>
+  {{ 0 = min a b - min X Y }}
   Z ::= 0;;
-  {{                       }}
+  {{ Z = min a b - min X Y }}
   WHILE (X <> 0 /\ Y <> 0) DO
-  {{                                     }} ->>
-  {{                                }}
+  {{ Z = min a b - min X Y /\ X <> 0 /\ Y <> 0 }} ->>
+  {{ Z = min a b - (min (X - 1) (Y - 1) + 1) }} ->>
+  {{ Z = min a b - (min (X - 1) (Y - 1)) - 1 }} ->>
+  {{ Z + 1 = min a b - min (X - 1) (Y - 1) }}
   X := X - 1;;
-  {{                            }}
+  {{ Z + 1 = min a b - min X (Y - 1) }}
   Y := Y - 1;;
-  {{                        }}
+  {{ Z + 1 = min a b - min X Y }}
   Z := Z + 1
-  {{                       }}
+  {{ Z = min a b - min X Y }}
   END
-  {{                            }} ->>
+  {{ Z = min a b - min X Y /\ min X Y = 0 }} ->>
   {{ Z = min a b }}
 *)
 
@@ -962,32 +968,33 @@ Qed.
     following decorated program.
 
     {{ True }} ->>
-    {{                                        }}
+    {{ c = 0 + 0 + c }}
   X ::= 0;;
-    {{                                        }}
+    {{ c = X + 0 + c }}
   Y ::= 0;;
-    {{                                        }}
+    {{ c = X + Y + c }}
   Z ::= c;;
-    {{                                        }}
+    {{ Z = X + Y + c }}
   WHILE X <> a DO
-      {{                                        }} ->>
-      {{                                        }}
+      {{ Z = X + Y + c /\ X <> a }} ->>
+      {{ Z + 1 = X + 1 + Y + c }}
     X ::= X + 1;;
-      {{                                        }}
+      {{ Z + 1 = X + Y + c }}
     Z ::= Z + 1
-      {{                                        }}
+      {{ Z = X + Y + c }}
   END;;
-    {{                                        }} ->>
-    {{                                        }}
+    {{ Z = X + Y + c /\ X = a }} ->>
+    {{ Z = a + Y + c }}
   WHILE Y <> b DO
-      {{                                        }} ->>
-      {{                                        }}
+      {{ Z = a + Y + c /\ Y <> b }} ->>
+      {{ Z + 1 = a + (Y + 1) + c }}
     Y ::= Y + 1;;
-      {{                                        }}
+      {{ Z + 1 = a + Y + c }}
     Z ::= Z + 1
-      {{                                        }}
+      {{ Z = a + Y + c }}
   END
-    {{                                        }} ->>
+    {{ Z = a + Y + c /\ ~(Y <> b) }} ->>
+    {{ Z = a + Y + x /\ Y = b }} ->>
     {{ Z = a + b + c }}
 *)
 
@@ -1011,7 +1018,32 @@ Qed.
 
     Write a decorated program for this. *)
 
-(* FILL IN HERE *)
+(*
+    {{ True }} ->>
+    {{ 0 = 0 }}
+  X ::= 0;;
+    {{ X = 0 }} ->>
+    {{ X = 0 /\ 1 = 1 }}
+  Y ::= 1;;
+    {{ X = 0 /\ Y = 1 }} ->>
+    {{ X = 0 /\ Y = 1 /\ 1 = 1 }} ->>
+  Z ::= 1;;
+    {{ X = 0 /\ Y = 1 /\ Z = 1}} ->>
+    {{ Y = 2 * Z - 1 /\ Z = 2 ^ X /\ X = 0 }}
+  WHILE X <> m DO
+      {{ Y = 2 * Z - 1 /\ Z = 2 ^ X /\ X <> m }} ->>
+      {{ Y + Z = Z + 2 * Z - 1 /\ 2 * Z = 2 ^ (X + 1) }}
+    Z ::= 2 * Z;;
+      {{ Y + Z = Z + Z - 1 /\ Z = 2 ^ (X + 1) }}
+    Y ::= Y + Z;;
+      {{ Y = Z + Z - 1 /\ Z = 2 ^ (X + 1) }} ->>
+      {{ Y = 2 * Z - 1 /\ Z = 2 ^ (X + 1) }}
+    X ::= X + 1
+      {{ Y = 2 *  Z - 1 /\ 2 * Z = 2 ^ X }}
+  END
+    {{ Y = 2 * Z - 1 /\ Z = 2 ^ X /\ ~ ( X <> m) }} ->>
+    {{ Y = 2 * Z - 1 /\ Z = 2 ^ X /\ X = m }}
+*)
 (** [] *)
 
 (* ################################################################# *)
@@ -1062,21 +1094,21 @@ Definition is_wp P c Q :=
 (** What are the weakest preconditions of the following commands
    for the following postconditions?
 
-  1) {{ ? }}  SKIP  {{ X = 5 }}
+  1) {{ X = 5 }}  SKIP  {{ X = 5 }}
 
-  2) {{ ? }}  X ::= Y + Z {{ X = 5 }}
+  2) {{ Y + Z = 5 }}  X ::= Y + Z {{ X = 5 }}
 
-  3) {{ ? }}  X ::= Y  {{ X = Y }}
+  3) {{ True }}  X ::= Y  {{ X = Y }}
 
-  4) {{ ? }}
+  4) {{ (X = 0 /\ Z = 4) \/ (X <> 0 /\ W = 3) }}
      IFB X == 0 THEN Y ::= Z + 1 ELSE Y ::= W + 2 FI
      {{ Y = 5 }}
 
-  5) {{ ? }}
+  5) {{ False }}
      X ::= 5
      {{ X = 0 }}
 
-  6) {{ ? }}
+  6) {{ True }}
      WHILE True DO X ::= 0 END
      {{ X = 0 }}
 *)
@@ -1092,7 +1124,16 @@ Theorem is_wp_example :
   is_wp (fun st => st Y <= 4)
     (X ::= APlus (AId Y) (ANum 1)) (fun st => st X <= 5).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold is_wp. split. eapply hoare_consequence_pre.
+  apply hoare_asgn. intros st H. unfold assn_sub.
+  rewrite t_update_eq. simpl. omega.
+  intros. unfold hoare_triple in H.
+  unfold assert_implies. intros.
+  assert ((X ::= APlus (AId Y) (ANum 1)) / st \\ t_update st X (aeval st (APlus (AId Y) (ANum 1)))). 
+  constructor. reflexivity.
+  apply H in H1. rewrite t_update_eq in H1. simpl in H1. omega.
+  assumption.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced, optional (hoare_asgn_weakest)  *)
@@ -1102,7 +1143,12 @@ Proof.
 Theorem hoare_asgn_weakest : forall Q X a,
   is_wp (Q [X |-> a]) (X ::= a) Q.
 Proof.
-(* FILL IN HERE *) Admitted.
+  unfold is_wp. unfold hoare_triple. split; intros.
+  inversion H; subst. unfold assn_sub in H0. assumption.
+  unfold assert_implies. unfold assn_sub. intros.
+  apply (H st (t_update st X (aeval st a))). constructor. reflexivity.
+  assumption.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced, optional (hoare_havoc_weakest)  *)
@@ -1115,7 +1161,11 @@ Lemma hoare_havoc_weakest : forall (P Q : Assertion) (X : id),
   {{ P }} HAVOC X {{ Q }} ->
   P ->> havoc_pre X Q.
 Proof.
-(* FILL IN HERE *) Admitted.
+  unfold hoare_triple. unfold havoc_pre.
+  unfold assert_implies. intros. eapply H.
+  constructor. assumption.
+Qed.
+
 End Himp2.
 (** [] *)
 
